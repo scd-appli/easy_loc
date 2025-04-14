@@ -1,122 +1,249 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'functions/utils.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const EasyLoc());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class EasyLoc extends StatelessWidget {
+  const EasyLoc({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'EasyLoc',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primaryColor: const Color(0xff7d82b8),
+        brightness: Brightness.light,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const HomeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomeScreenState extends State<HomeScreen> {
+  late TextEditingController _isbnController;
 
-  void _incrementCounter() {
+  List<Map<String, String>>? _data;
+  String? _noData;
+  bool _validInput = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _isbnController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _isbnController.dispose();
+    super.dispose();
+  }
+
+  Future<String?> isbn2ppn(String isbn) async {
+    final response = await getAPI(
+      "https://www.sudoc.fr/services/isbn2ppn/$isbn",
+    );
+    return response['sudoc']?['query']?['result']?['ppn'];
+  }
+
+  Future<List<Map<String, String>>> multiwhere(String ppn) async {
+    try {
+      final response = await getAPI(
+        "https://www.sudoc.fr/services/multiwhere/$ppn",
+      );
+
+      final libraryData = response['sudoc']?['query']?['result']?['library'];
+
+      if (libraryData == null) {
+        return [];
+      }
+
+      if (libraryData is List) {
+        return List<Map<String, String>>.from(
+          libraryData.map((item) => Map<String, String>.from(item)),
+        );
+      } else if (libraryData is Map) {
+        // Handle case when only one library is returned (might be a direct map)
+        return [Map<String, String>.from(libraryData)];
+      }
+
+      return [];
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  void fetchData(String isbn) async {
+    String? ppn = await isbn2ppn(isbn);
+    if (ppn == null) {
+      setState(() {
+        _noData = isbn;
+      });
+      return null;
+    }
+
+    List<Map<String, String>> response = await multiwhere(ppn);
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _noData = null;
+      _data = response;
     });
+  }
+
+  void send() {
+    String isbn = _isbnController.text;
+    // if the isbn is correct
+    if (isISBN10(isbn) || isISBN13(isbn)) {
+      setState(() {
+        fetchData(isbn);
+        _validInput = true;
+      });
+    } else {
+      setState(() {
+        _validInput = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+    if (_data == null) {
+      return GestureDetector(
+        onTap: () {
+          // Unfocus when tapped outside the TextField
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: CustomAppBar(title: 'EasyLoc'),
+          body: Center(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.7,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: _isbnController,
+                      onChanged: (value) {
+                        setState(() {});
+                      },
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "ISBN",
+                        errorText: _validInput ? null : "Input Invalid",
+                        suffixIcon:
+                            _isbnController.text.isNotEmpty
+                                ? IconButton(
+                                  onPressed: () {
+                                    send();
+                                  },
+                                  icon: const Icon(Icons.send),
+                                )
+                                : null,
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9-]')),
+                        IsISBN(),
+                      ],
+                      onSubmitted: (value) {
+                        send();
+                      },
+                    ),
+                    Text(
+                      _noData != null
+                          ? "Aucune notice n'est associée à cette valeur: $_noData"
+                          : '',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
+          ),
+          floatingActionButton: ScanButton(onPressed: () {}),
+        ),
+      );
+      // if research
+    } else {
+      return GestureDetector(
+        onTap: () {
+          // Unfocus when tapped outside the TextField
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: CustomAppBar(
+            title: 'EasyLoc',
+            onTitleTap: () {
+              setState(() {
+                _data = null;
+              });
+            },
+          ),
+          body: Expanded(child: Text("test")),
+          floatingActionButton: ScanButton(onPressed: () {}),
+        ),
+      );
+    }
+  }
+}
+
+class ScanButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const ScanButton({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          Theme.of(context).primaryColor,
+        ),
+        iconSize: const WidgetStatePropertyAll(30),
+        fixedSize: WidgetStateProperty.all(const Size(60, 60)),
+        padding: WidgetStateProperty.all(EdgeInsets.zero),
+        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      child: const Icon(Icons.qr_code_scanner, color: Colors.black),
     );
   }
+}
+
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final VoidCallback? onTitleTap;
+
+  const CustomAppBar({super.key, required this.title, this.onTitleTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: GestureDetector(onTap: onTitleTap, child: Text(title)),
+      centerTitle: true,
+      leading: const Icon(Icons.history, size: 30),
+      actions: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(right: 10.0),
+          child: Icon(Icons.settings_outlined, size: 30),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
