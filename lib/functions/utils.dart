@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
@@ -17,12 +18,7 @@ class IsISBN extends TextInputFormatter {
       return oldValue;
     }
 
-    // Cannot be more than 17 characters (ISBN-13 + 4 dashes)
-    if (value.length > 17) {
-      return oldValue;
-    }
-
-    // Cannot have more than 4 dashes
+    // cannot have more than 4 dashes
     if (value.length - numbers.length > 4) {
       return oldValue;
     }
@@ -33,33 +29,31 @@ class IsISBN extends TextInputFormatter {
 }
 
 bool isISBN10(String value) {
-  // Pattern for ISBN-10 without dashes
-  RegExp patternWithoutDashes = RegExp(r'^\d{10}$');
+  RegExp patternISBN = RegExp(
+    // Match either compact (9 digits + check) or hyphenated (groups + check)
+    r'^(?:' // Start non-capturing group for alternatives
+    // Alternative 1: Compact ISBN-10. Match 9 digits.
+    r'(?<number>\d{9})'
+    r'|' // OR
+    // Alternative 2: Hyphenated ISBN-10.
+    // Use lookahead to assert total length is 13 characters.
+    r'(?=[\dX -]{13}$)'
+    // Match the hyphenated groups.
+    r'(?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -]'
+    r')' // End non-capturing group for alternatives
+    // Match the final check digit (must be a digit or 'X').
+    r'(?<checkDigit>[\dX])$',
+  );
 
-  // Pattern for ISBN-10 with dashes
-  RegExp patternWithDashes = RegExp(r'^\D{1}-\d{2}-\d{6}-\d{1}$');
-
-  // Check if value matches either pattern
-  return patternWithoutDashes.hasMatch(value) ||
-      patternWithDashes.hasMatch(value);
+  return patternISBN.hasMatch(value);
 }
 
 bool isISBN13(String value) {
-  // Pattern for ISBN-13 without dashes
-  RegExp patternWithoutDashes = RegExp(r'^\d{13}$');
+  RegExp patternISBN = RegExp(
+    r'^(?<gs1>\d{3})(?:(?<number>\d{9})|(?=[\d -]{14}$)[ -](?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -])(?<checkDigit>\d)$',
+  );
 
-  // Pattern for ISBN-13 with dashes
-  RegExp patternWithDashes = RegExp(r'^\d{3}-\d{1}-\d{2}-\d{6}-\d{1}$');
-
-  return patternWithoutDashes.hasMatch(value) ||
-      patternWithDashes.hasMatch(value);
-}
-
-bool isPPN(String value) {
-  // Pattern for format
-  RegExp patternPPN = RegExp(r'^\d{9}$');
-
-  return patternPPN.hasMatch(value);
+  return patternISBN.hasMatch(value);
 }
 
 Future<dynamic> getAPI(String url) async {
@@ -71,4 +65,80 @@ Future<dynamic> getAPI(String url) async {
     throw Exception("Failed to fetch, status code : ${response.statusCode}");
   }
   return jsonDecode(response.body);
+}
+
+Future<List<Map<String, String>>?> isbn2ppn(String isbn) async {
+  try {
+    final response = await getAPI(
+      "https://www.sudoc.fr/services/isbn2ppn/$isbn",
+    );
+
+    final result = response['sudoc']?['query']?['result'];
+    if (result is List) {
+      return List<Map<String, String>>.from(
+        result.map((item) => Map<String, String>.from(item)),
+      );
+    } else if (result is Map) {
+      return [Map<String, String>.from(result)];
+    }
+    return null;
+  } catch (e) {
+    debugPrint("Error in isbn2ppn: $e");
+    return null;
+  }
+}
+
+Future<List<Map<String, dynamic>>> multiwhere(
+  List<Map<String, String>> ppnList,
+) async {
+  List<Map<String, dynamic>> results = [];
+
+  await Future.wait(
+    ppnList.map((ppnMap) async {
+      String? ppnValue = ppnMap['ppn'];
+      if (ppnValue == null) return;
+
+      try {
+        final response = await getAPI(
+          "https://www.sudoc.fr/services/multiwhere/$ppnValue",
+        );
+
+        final queryResult = response['sudoc']?['query']?['result'];
+        final libraryData = queryResult?['library'];
+
+        List<Map<String, String>> libraries = [];
+        if (libraryData != null) {
+          List<dynamic> rawLibraries = [];
+          if (libraryData is List) {
+            rawLibraries = libraryData;
+          } else if (libraryData is Map) {
+            // Handle case where API returns a single map if only one library
+            rawLibraries = [libraryData];
+          }
+
+          libraries = List<Map<String, String>>.from(
+            rawLibraries
+                .map((item) {
+                  if (item is Map) {
+                    return {
+                      'location': item['shortname']?.toString() ?? '',
+                      'longitude': item['longitude']?.toString() ?? '',
+                      'latitude': item['latitude']?.toString() ?? '',
+                    };
+                  } else {
+                    return {};
+                  }
+                })
+                .where((map) => map.isNotEmpty), // Filter out empty maps
+          );
+        }
+        // Add result for this PPN to the list (synchronized access not strictly needed with Future.wait like this)
+        results.add({'ppn': ppnValue, 'libraries': libraries});
+      } catch (e) {
+        debugPrint("Error fetching libraries for PPN $ppnValue: $e");
+      }
+    }),
+  );
+
+  return results;
 }

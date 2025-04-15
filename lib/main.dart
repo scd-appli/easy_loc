@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'functions/utils.dart';
+import 'component/card.dart';
 
 void main() {
   runApp(const EasyLoc());
@@ -30,71 +31,41 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late TextEditingController _isbnController;
+  final TextEditingController _isbnController = TextEditingController();
 
-  List<Map<String, String>>? _data;
+  List<Map<String, dynamic>>? _data;
   String? _noData;
   bool _validInput = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _isbnController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _isbnController.dispose();
-    super.dispose();
-  }
-
-  Future<String?> isbn2ppn(String isbn) async {
-    final response = await getAPI(
-      "https://www.sudoc.fr/services/isbn2ppn/$isbn",
-    );
-    return response['sudoc']?['query']?['result']?['ppn'];
-  }
-
-  Future<List<Map<String, String>>> multiwhere(String ppn) async {
-    try {
-      final response = await getAPI(
-        "https://www.sudoc.fr/services/multiwhere/$ppn",
-      );
-
-      final libraryData = response['sudoc']?['query']?['result']?['library'];
-
-      if (libraryData == null) {
-        return [];
-      }
-
-      if (libraryData is List) {
-        return List<Map<String, String>>.from(
-          libraryData.map((item) => Map<String, String>.from(item)),
-        );
-      } else if (libraryData is Map) {
-        // Handle case when only one library is returned (might be a direct map)
-        return [Map<String, String>.from(libraryData)];
-      }
-
-      return [];
-    } catch (e) {
-      throw Exception("Error: $e");
-    }
-  }
+  int _count = 0;
 
   void fetchData(String isbn) async {
-    String? ppn = await isbn2ppn(isbn);
-    if (ppn == null) {
+    setState(() {
+      _noData = null;
+    });
+
+    List<Map<String, String>>? ppnList = await isbn2ppn(isbn);
+    if (ppnList == null || ppnList.isEmpty) {
       setState(() {
         _noData = isbn;
+        _count = 0;
       });
-      return null;
+      return;
     }
 
-    List<Map<String, String>> response = await multiwhere(ppn);
+    List<Map<String, dynamic>> response = await multiwhere(ppnList);
+
+    int count = 0;
+    for (var ppnEntry in response) {
+      final librariesList = ppnEntry['libraries'] as List?;
+      if (librariesList != null) {
+        count += librariesList.length;
+      }
+    }
+
     setState(() {
       _noData = null;
       _data = response;
+      _count = count;
     });
   }
 
@@ -109,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       setState(() {
         _validInput = false;
+        _noData = null;
       });
     }
   }
@@ -125,49 +97,21 @@ class _HomeScreenState extends State<HomeScreen> {
           resizeToAvoidBottomInset: true,
           appBar: CustomAppBar(title: 'EasyLoc'),
           body: Center(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.7,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextField(
-                      controller: _isbnController,
-                      onChanged: (value) {
-                        setState(() {});
-                      },
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "ISBN",
-                        errorText: _validInput ? null : "Input Invalid",
-                        suffixIcon:
-                            _isbnController.text.isNotEmpty
-                                ? IconButton(
-                                  onPressed: () {
-                                    send();
-                                  },
-                                  icon: const Icon(Icons.send),
-                                )
-                                : null,
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9-]')),
-                        IsISBN(),
-                      ],
-                      onSubmitted: (value) {
-                        send();
-                      },
-                    ),
-                    Text(
-                      _noData != null
-                          ? "Aucune notice n'est associée à cette valeur: $_noData"
-                          : '',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ],
-                ),
-              ),
+            child: IsbnInputForm(
+              controller: _isbnController,
+              isValid: _validInput,
+              noDataMessage:
+                  _noData != null
+                      ? "No record is associated with this value: $_noData"
+                      : null,
+              onChanged: (value) {
+                if (!_validInput) {
+                  setState(() {
+                    _validInput = true;
+                  });
+                }
+              },
+              onSend: send,
             ),
           ),
           floatingActionButton: ScanButton(onPressed: () {}),
@@ -187,10 +131,61 @@ class _HomeScreenState extends State<HomeScreen> {
             onTitleTap: () {
               setState(() {
                 _data = null;
+                _isbnController.clear();
+                _validInput = true;
+                _noData = null;
               });
             },
           ),
-          body: Expanded(child: Text("test")),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IsbnInputForm(
+                controller: _isbnController,
+                isValid: _validInput,
+                onChanged: (value) {
+                  if (!_validInput) {
+                    setState(() {
+                      _validInput = true;
+                    });
+                  }
+                },
+                noDataMessage:
+                    _noData != null
+                        ? "No record is associated with this value: $_noData"
+                        : null,
+                onSend: send,
+                padding: 17,
+              ),
+              Text(
+                _count == 0
+                    ? "No library has this item."
+                    : "Found in $_count ${_count == 1 ? 'library' : 'libraries'}",
+              ),
+              Expanded(
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  interactive: true,
+                  child: ListView(
+                    padding: const EdgeInsets.all(15.0),
+                    children:
+                        _data!
+                            .expand(
+                              (entry) => (entry['libraries'] as List? ?? [])
+                                  .map((library) {
+                                    return CustomCard(
+                                      location: library['location'],
+                                      longitude: library['longitude'],
+                                      latitude: library['latitude'],
+                                    );
+                                  }),
+                            )
+                            .toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
           floatingActionButton: ScanButton(onPressed: () {}),
         ),
       );
@@ -246,4 +241,80 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+class IsbnInputForm extends StatelessWidget {
+  final TextEditingController controller;
+  final bool isValid;
+  final String? noDataMessage;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onSend;
+  final double? padding;
+
+  const IsbnInputForm({
+    super.key,
+    required this.controller,
+    required this.isValid,
+    this.noDataMessage,
+    required this.onChanged,
+    required this.onSend,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Use ValueListenableBuilder to rebuild suffixIcon when controller text changes
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, child) {
+        return Padding(
+          padding:
+              padding != null
+                  ? EdgeInsets.only(top: padding!, bottom: padding!)
+                  : EdgeInsets.zero,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.7,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextField(
+                    controller: controller,
+                    onChanged: onChanged,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: "ISBN",
+                      errorText: isValid ? null : "Input invalid",
+                      suffixIcon:
+                          value.text.isNotEmpty
+                              ? IconButton(
+                                onPressed: onSend,
+                                icon: const Icon(Icons.send),
+                              )
+                              : null,
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9-X]')),
+                      IsISBN(),
+                    ],
+                    onSubmitted: (_) => onSend(),
+                  ),
+                  if (noDataMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        noDataMessage!,
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
