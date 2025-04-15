@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'functions/utils.dart';
 import 'component/card.dart';
+import 'component/custom_app_bar.dart';
+import 'component/isbn_input_form.dart';
+import 'component/scan_button.dart';
 
 void main() {
   runApp(const EasyLoc());
@@ -120,7 +122,10 @@ class _HomeScreenState extends State<HomeScreen> {
               onSend: send,
             ),
           ),
-          floatingActionButton: ScanButton(onPressed: () {}),
+          floatingActionButton: ScanButton(
+            onSend: send,
+            isbnController: _isbnController,
+          ),
         ),
       );
       // if research
@@ -192,135 +197,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          floatingActionButton: ScanButton(onPressed: () {}),
+          floatingActionButton: ScanButton(
+            onSend: send,
+            isbnController: _isbnController,
+          ),
         ),
       );
     }
-  }
-}
-
-class ScanButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const ScanButton({super.key, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(
-          Theme.of(context).primaryColor,
-        ),
-        iconSize: const WidgetStatePropertyAll(30),
-        fixedSize: WidgetStateProperty.all(const Size(60, 60)),
-        padding: WidgetStateProperty.all(EdgeInsets.zero),
-        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-        ),
-      ),
-      child: const Icon(Icons.qr_code_scanner, color: Colors.black),
-    );
-  }
-}
-
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  final VoidCallback? onTitleTap;
-
-  const CustomAppBar({super.key, required this.title, this.onTitleTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      title: GestureDetector(onTap: onTitleTap, child: Text(title)),
-      centerTitle: true,
-      leading: const Icon(Icons.history, size: 30),
-      actions: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(right: 10.0),
-          child: Icon(Icons.settings_outlined, size: 30),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
-
-class IsbnInputForm extends StatelessWidget {
-  final TextEditingController controller;
-  final bool isValid;
-  final String? noDataMessage;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onSend;
-  final double? padding;
-
-  const IsbnInputForm({
-    super.key,
-    required this.controller,
-    required this.isValid,
-    this.noDataMessage,
-    required this.onChanged,
-    required this.onSend,
-    this.padding,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Use ValueListenableBuilder to rebuild suffixIcon when controller text changes
-    return ValueListenableBuilder<TextEditingValue>(
-      valueListenable: controller,
-      builder: (context, value, child) {
-        return Padding(
-          padding:
-              padding != null
-                  ? EdgeInsets.only(top: padding!, bottom: padding!)
-                  : EdgeInsets.zero,
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.7,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextField(
-                    controller: controller,
-                    onChanged: onChanged,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      labelText: "ISBN",
-                      errorText: isValid ? null : "Input invalid",
-                      suffixIcon:
-                          value.text.isNotEmpty
-                              ? IconButton(
-                                onPressed: onSend,
-                                icon: const Icon(Icons.send),
-                              )
-                              : null,
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9-X]')),
-                      IsISBN(),
-                    ],
-                    onSubmitted: (_) => onSend(),
-                  ),
-                  if (noDataMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        noDataMessage!,
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
   }
 }
