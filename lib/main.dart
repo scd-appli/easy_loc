@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'functions/utils.dart';
@@ -47,25 +48,30 @@ class _HomeScreenState extends State<HomeScreen> {
     if (ppnList == null || ppnList.isEmpty) {
       setState(() {
         _noData = isbn;
-        _count = 0;
       });
       return;
     }
 
     List<Map<String, dynamic>> response = await multiwhere(ppnList);
 
-    int count = 0;
-    for (var ppnEntry in response) {
-      final librariesList = ppnEntry['libraries'] as List?;
-      if (librariesList != null) {
-        count += librariesList.length;
-      }
-    }
+    List<Map<String, String>> allLibraries =
+        response
+            .expand(
+              (result) =>
+                  (result['libraries'] as List<dynamic>)
+                      .cast<Map<String, String>>(),
+            )
+            .toList();
+
+    List<Map<String, String>> sortedLibraries = await compute(
+      sortLibraries,
+      allLibraries,
+    );
 
     setState(() {
       _noData = null;
-      _data = response;
-      _count = count;
+      _data = sortedLibraries;
+      _count = sortedLibraries.length;
     });
   }
 
@@ -157,10 +163,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 onSend: send,
                 padding: 17,
               ),
-              Text(
-                _count == 0
-                    ? "No library has this item."
-                    : "Found in $_count ${_count == 1 ? 'library' : 'libraries'}",
+              Padding(
+                padding: EdgeInsets.only(bottom: 5),
+                child: Text(
+                  _count == 0
+                      ? "No library has this item."
+                      : "Found in $_count ${_count == 1 ? 'library' : 'libraries'}",
+                ),
               ),
               Expanded(
                 child: Scrollbar(
@@ -170,15 +179,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.all(15.0),
                     children:
                         _data!
-                            .expand(
-                              (entry) => (entry['libraries'] as List? ?? [])
-                                  .map((library) {
-                                    return CustomCard(
-                                      location: library['location'],
-                                      longitude: library['longitude'],
-                                      latitude: library['latitude'],
-                                    );
-                                  }),
+                            .map(
+                              (element) => CustomCard(
+                                location: element['location'],
+                                longitude: element['longitude'],
+                                latitude: element['latitude'],
+                              ),
                             )
                             .toList(),
                   ),

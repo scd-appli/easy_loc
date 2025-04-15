@@ -142,3 +142,11 @@ Future<List<Map<String, dynamic>>> multiwhere(
 
   return results;
 }
+
+List<Map<String, String>> sortLibraries(List<Map<String, String>> libraries) {
+  libraries.sort(
+    (a, b) =>
+        a['location']!.toLowerCase().compareTo(b['location']!.toLowerCase()),
+  );
+  return libraries;
+}
