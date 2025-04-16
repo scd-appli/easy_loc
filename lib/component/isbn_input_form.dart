@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../functions/utils.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class IsbnInputForm extends StatelessWidget {
   final TextEditingController controller;
@@ -43,7 +44,7 @@ class IsbnInputForm extends StatelessWidget {
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       labelText: "ISBN",
-                      errorText: isValid ? null : "Input invalid",
+                      errorText: isValid ? null : AppLocalizations.of(context)!.invalidInput,
                       suffixIcon:
                           value.text.isNotEmpty
                               ? IconButton(

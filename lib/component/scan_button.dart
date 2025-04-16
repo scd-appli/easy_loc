@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/services.dart' show PlatformException;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ScanButton extends StatelessWidget {
   final VoidCallback onSend;
@@ -41,45 +42,62 @@ void scan(BuildContext context, TextEditingController isbnController) async {
     // Check if the widget is still mounted before using the context
     if (!context.mounted) return;
 
-    // Check if the user cancelled the scan
-    if (result.type == ResultType.Barcode) {
-      isbnController.text = result.rawContent;
-    } else if (result.type == ResultType.Cancelled) {
-      // Handle cancellation, e.g., show a message
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Scan cancelled by user.')));
-    } else if (result.type == ResultType.Error) {
-      // Handle other errors reported by the scanner
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Scan failed: ${result.rawContent}')),
-      );
+    // Handle the result
+    switch (result.type) {
+      // If Success
+      case ResultType.Barcode:
+        isbnController.text = result.rawContent;
+        break;
+
+      // If Cancelled
+      case ResultType.Cancelled:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.scanCancelledUser),
+          ),
+        );
+        break;
+
+      // If error
+      case ResultType.Error:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context)!.scanFailed}: ${result.rawContent}',
+            ),
+          ),
+        );
+        break;
     }
   } on PlatformException catch (e) {
     if (e.code == BarcodeScanner.cameraAccessDenied) {
       // Handle permission denied
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Camera permission was denied. Please grant permission in app settings.',
-          ),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.cameraAccessDenied),
         ),
       );
     } else {
       // Handle other potential platform exceptions
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('An unknown error occurred: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${AppLocalizations.of(context)!.unknowError}: $e'),
+        ),
+      );
     }
   } on FormatException {
     // Handle format exceptions (e.g., user pressed back button before scanning)
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Scan cancelled before capturing data.')),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.scanCancelledBeforeData),
+      ),
     );
   } catch (e) {
     // Handle any other unexpected errors
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('An unexpected error occurred: $e')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${AppLocalizations.of(context)!.unexpectedError}: $e'),
+      ),
+    );
   }
 }
