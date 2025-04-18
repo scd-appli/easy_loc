@@ -12,5 +12,6 @@
     "noLibraryGotThis": "Aucune bibliothèque ne possède cet article.",
     "foundIn": "Trouvé dans",
     "library": "bibliothèque",
-    "libraries": "bibliothèques"
+    "libraries": "bibliothèques",
+    "settingsTitle": "Paramètres"
 }

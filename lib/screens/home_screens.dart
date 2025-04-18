@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../functions/utils.dart';
-import '../component/card.dart';
-import '../component/custom_app_bar.dart';
-import '../component/isbn_input_form.dart';
-import '../component/scan_button.dart';
+import '../components/card.dart';
+import '../components/custom_app_bar.dart';
+import '../components/isbn_input_form.dart';
+import '../components/scan_button.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -74,9 +74,33 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // AppBar for the HomeScreen
+  PreferredSizeWidget? appBar({VoidCallback? onTitleTap}) {
+    final l10n = AppLocalizations.of(context)!;
+    return CustomAppBar(
+      title: l10n.appName,
+      onTitleTap: onTitleTap ?? () {},
+      actions: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(right: 10.0),
+          child: IconButton(
+            icon: Icon(Icons.settings_outlined),
+            iconSize: 30,
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings');
+            },
+          ),
+        ),
+      ],
+      leading: const Icon(Icons.history, size: 30),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_data == null) {
+      // Initial state or after reset
       return GestureDetector(
         onTap: () {
           // Unfocus when tapped outside the TextField
@@ -84,15 +108,13 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: Scaffold(
           resizeToAvoidBottomInset: true,
-          appBar: CustomAppBar(title: AppLocalizations.of(context)!.appName),
+          appBar: appBar(),
           body: Center(
             child: IsbnInputForm(
               controller: _isbnController,
               isValid: _validInput,
               noDataMessage:
-                  _noData != null
-                      ? "${AppLocalizations.of(context)!.noPPNAssociated}: $_noData"
-                      : null,
+                  _noData != null ? "${l10n.noPPNAssociated}: $_noData" : null,
               onChanged: (value) {
                 if (!_validInput) {
                   setState(() {
@@ -109,8 +131,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       );
-      // if research
     } else {
+      // State when data is loaded (research results shown)
       return GestureDetector(
         onTap: () {
           // Unfocus when tapped outside the TextField
@@ -118,8 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: Scaffold(
           resizeToAvoidBottomInset: true,
-          appBar: CustomAppBar(
-            title: AppLocalizations.of(context)!.appName,
+          appBar: appBar(
             onTitleTap: () {
               setState(() {
                 _data = null;
@@ -144,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 noDataMessage:
                     _noData != null
-                        ? "${AppLocalizations.of(context)!.noPPNAssociated}: $_noData"
+                        ? "${l10n.noPPNAssociated}: $_noData"
                         : null,
                 onSend: send,
                 padding: 17,
@@ -153,8 +174,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.only(bottom: 5),
                 child: Text(
                   _count == 0
-                      ? AppLocalizations.of(context)!.noLibraryGotThis
-                      : "${AppLocalizations.of(context)!.foundIn} $_count ${_count == 1 ? AppLocalizations.of(context)!.library : AppLocalizations.of(context)!.libraries}",
+                      ? l10n.noLibraryGotThis
+                      : "${l10n.foundIn} $_count ${_count == 1 ? l10n.library : l10n.libraries}",
                 ),
               ),
               Expanded(
@@ -177,10 +198,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
-          ),
-          floatingActionButton: ScanButton(
-            onSend: send,
-            isbnController: _isbnController,
           ),
         ),
       );

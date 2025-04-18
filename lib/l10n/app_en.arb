@@ -12,5 +12,6 @@
     "noLibraryGotThis": "No library has this item.",
     "foundIn": "Found in",
     "library": "librarie",
-    "libraries": "librairies"
+    "libraries": "librairies",
+    "settingsTitle": "Settings"
 }
