@@ -52,3 +52,6 @@ macos/
 web/
 windows/
 
+# To kepp
+!ios/Runner/Info.plist
+!android/app/src/main/AndroidManifest.xml
