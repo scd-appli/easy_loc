@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'snack_bar.dart';
 
 class ScanButton extends StatelessWidget {
   final VoidCallback onSend;
@@ -51,20 +52,22 @@ void scan(BuildContext context, TextEditingController isbnController) async {
 
       // If Cancelled
       case ResultType.Cancelled:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.scanCancelledUser),
+        showSnackBar(
+          context,
+          Text(
+            AppLocalizations.of(context)!.scanCancelledUser,
+            style: TextStyle(color: Colors.black),
           ),
         );
         break;
 
       // If error
       case ResultType.Error:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${AppLocalizations.of(context)!.scanFailed}: ${result.rawContent}',
-            ),
+        showSnackBar(
+          context,
+          Text(
+            '${AppLocalizations.of(context)!.scanFailed}: ${result.rawContent}',
+            style: TextStyle(color: Colors.black),
           ),
         );
         break;
@@ -72,31 +75,39 @@ void scan(BuildContext context, TextEditingController isbnController) async {
   } on PlatformException catch (e) {
     if (e.code == BarcodeScanner.cameraAccessDenied) {
       // Handle permission denied
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.cameraAccessDenied),
+      showSnackBar(
+        context,
+        Text(
+          AppLocalizations.of(context)!.cameraAccessDenied,
+          style: TextStyle(color: Colors.black),
         ),
       );
     } else {
       // Handle other potential platform exceptions
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${AppLocalizations.of(context)!.unknowError}: $e'),
+      showSnackBar(
+        context,
+        Text(
+          '${AppLocalizations.of(context)!.unknowError}: $e',
+          style: TextStyle(color: Colors.black),
         ),
       );
     }
   } on FormatException {
     // Handle format exceptions (e.g., user pressed back button before scanning)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.scanCancelledBeforeData),
+    showSnackBar(
+      context,
+      Text(
+        AppLocalizations.of(context)!.scanCancelledBeforeData,
+        style: TextStyle(color: Colors.black),
       ),
     );
   } catch (e) {
     // Handle any other unexpected errors
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${AppLocalizations.of(context)!.unexpectedError}: $e'),
+    showSnackBar(
+      context,
+      Text(
+        '${AppLocalizations.of(context)!.unexpectedError}: $e',
+        style: TextStyle(color: Colors.black),
       ),
     );
   }
