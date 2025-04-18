@@ -1,0 +1,16 @@
+{
+    "@@locale": "en",
+    "appName": "EasyLoc",
+    "scanCancelledUser": "Scan cancelled by user.",
+    "scanFailed": "Scan failed",
+    "cameraAccessDenied": "Camera permission was denied. Please grant permission in app settings.",
+    "unknowError": "An unknown error occurred",
+    "scanCancelledBeforeData": "Scan cancelled before capturing data.",
+    "unexpectedError": "An unexpected error occurred",
+    "invalidInput": "Invalid input",
+    "noPPNAssociated": "No record is associated with this value",
+    "noLibraryGotThis": "No library has this item.",
+    "foundIn": "Found in",
+    "library": "librarie",
+    "libraries": "librairies"
+}
