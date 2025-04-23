@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../components/custom_app_bar.dart';
@@ -76,6 +77,22 @@ class _SettingsState extends State<Settings> {
       );
     }
 
+    // Determine if the 'System' option should be available
+    final String systemLangCode = Platform.localeName.split('_')[0];
+    final List<String> supportedLangCodes =
+        AppLocalizations.supportedLocales
+            .map((locale) => locale.languageCode)
+            .toList();
+    final bool showSystemOption = supportedLangCodes.contains(systemLangCode);
+
+    // Filter the language options based on whether the system language is supported
+    final List<SupportedLanguages> availableLanguageOptions =
+        showSystemOption
+            ? SupportedLanguages.values.toList()
+            : SupportedLanguages.values
+                .where((lang) => lang != SupportedLanguages.system)
+                .toList();
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -116,10 +133,11 @@ class _SettingsState extends State<Settings> {
                     Spacer(),
                     CustomDropDownMenu(
                       key: ValueKey(
-                        'language_${currentLocale.languageCode}',
+                        'language_${currentLocale.languageCode}_$showSystemOption', // Update key
                       ), // trigger the rebuild
                       dropdownMenuEntries:
-                          SupportedLanguages.values.map((element) {
+                          availableLanguageOptions.map((element) {
+                            // Use filtered list
                             return DropdownMenuEntry<SupportedLanguages>(
                               value: element,
                               label: DisplayLanguage.supportedLanguagesToString(
@@ -133,7 +151,13 @@ class _SettingsState extends State<Settings> {
                           changeLanguageSetting(value);
                         }
                       },
-                      initialSelection: _lang.getCurrentSetting(),
+                      // Ensure initial selection is valid if 'System' was filtered out
+                      initialSelection:
+                          availableLanguageOptions.contains(
+                                _lang.getCurrentSetting(),
+                              )
+                              ? _lang.getCurrentSetting()
+                              : SupportedLanguages.en,
                     ),
                   ],
                 ),
