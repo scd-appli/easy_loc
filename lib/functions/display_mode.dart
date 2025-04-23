@@ -1,6 +1,7 @@
 import 'package:easy_loc/main.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum DisplayMode { system, light, dark }
 
@@ -10,15 +11,13 @@ class Mode {
 
   Mode(this._mode, this.sharred);
 
-  void changeMode(BuildContext context, DisplayMode mode) {
+  void changeMode(BuildContext context, DisplayMode mode) async {
     _mode = mode;
-    sharred.setInt("mode", displayModeToInt(mode));
+    await sharred.setInt("mode", displayModeToInt(mode));
     EasyLoc.of(context).changeTheme(Mode.displayModeToThemeMode(mode));
   }
 
-  DisplayMode get() {
-    return _mode;
-  }
+  DisplayMode get() => _mode;
 
   Future<DisplayMode> getSync() async {
     int? n = await sharred.getInt("mode");
@@ -32,11 +31,17 @@ class Mode {
     return _mode;
   }
 
-  static Map<DisplayMode, String> displayModeToString = {
-    DisplayMode.system: "System",
-    DisplayMode.light: "Light",
-    DisplayMode.dark: "Dark",
-  };
+  static String displayModeToString(BuildContext context, DisplayMode mode) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (mode) {
+      case DisplayMode.system:
+        return l10n.system;
+      case DisplayMode.light:
+        return l10n.light;
+      case DisplayMode.dark:
+        return l10n.dark;
+    }
+  }
 
   static DisplayMode intToDisplayMode(int n) {
     switch (n) {

@@ -18,6 +18,17 @@ class CustomDropDownMenu extends StatelessWidget {
       dropdownMenuEntries: dropdownMenuEntries,
       onSelected: onSelected,
       initialSelection: initialSelection,
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0)),
+      ),
+      menuStyle: MenuStyle(
+        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        ),
+        padding: WidgetStateProperty.all<EdgeInsets>(
+          const EdgeInsets.only(top: 0.0),
+        ),
+      ),
     );
   }
 }

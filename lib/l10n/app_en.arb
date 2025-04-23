@@ -13,5 +13,12 @@
     "foundIn": "Found in",
     "library": "librarie",
     "libraries": "librairies",
-    "settingsTitle": "Settings"
+    "settingsTitle": "Settings",
+    "displayMode": "Display mode",
+    "language": "Language",
+    "english": "English",
+    "french": "French",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
 }

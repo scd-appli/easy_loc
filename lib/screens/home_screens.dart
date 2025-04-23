@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _validInput = true;
   int _count = 0;
 
-  void fetchData(String isbn) async {
+  Future<void> _fetchData(String isbn) async {
     setState(() {
       _noData = null;
     });
@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // if the isbn is correct
     if (isISBN10(isbn) || isISBN13(isbn)) {
       setState(() {
-        fetchData(isbn);
+        _fetchData(isbn);
         _validInput = true;
       });
     } else {
@@ -150,54 +150,66 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
           ),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IsbnInputForm(
-                controller: _isbnController,
-                isValid: _validInput,
-                onChanged: (value) {
-                  if (!_validInput) {
-                    setState(() {
-                      _validInput = true;
-                    });
-                  }
-                },
-                noDataMessage:
-                    _noData != null
-                        ? "${l10n.noPPNAssociated}: $_noData"
-                        : null,
-                onSend: send,
-                padding: 17,
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 5),
-                child: Text(
-                  _count == 0
-                      ? l10n.noLibraryGotThis
-                      : "${l10n.foundIn} $_count ${_count == 1 ? l10n.library : l10n.libraries}",
+          floatingActionButton: ScanButton(
+            onSend: send,
+            isbnController: _isbnController,
+          ),
+          body: RefreshIndicator(
+            onRefresh: () => _fetchData(_isbnController.text),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IsbnInputForm(
+                  controller: _isbnController,
+                  isValid: _validInput,
+                  onChanged: (value) {
+                    if (!_validInput) {
+                      setState(() {
+                        _validInput = true;
+                      });
+                    }
+                  },
+                  noDataMessage:
+                      _noData != null
+                          ? "${l10n.noPPNAssociated}: $_noData"
+                          : null,
+                  onSend: send,
+                  padding: 17,
                 ),
-              ),
-              Expanded(
-                child: Scrollbar(
-                  thumbVisibility: true,
-                  interactive: true,
-                  child: ListView(
-                    padding: const EdgeInsets.all(15.0),
-                    children:
-                        _data!
-                            .map(
-                              (element) => CustomCard(
-                                location: element['location'],
-                                longitude: element['longitude'],
-                                latitude: element['latitude'],
-                              ),
-                            )
-                            .toList(),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 5),
+                  child: Text(
+                    _count == 0
+                        ? l10n.noLibraryGotThis
+                        : "${l10n.foundIn} $_count ${_count == 1 ? l10n.library : l10n.libraries}",
                   ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    interactive: true,
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(
+                        15.0,
+                        15.0,
+                        15.0,
+                        95.0,
+                      ),
+                      children:
+                          _data!
+                              .map(
+                                (element) => CustomCard(
+                                  location: element['location'],
+                                  longitude: element['longitude'],
+                                  latitude: element['latitude'],
+                                ),
+                              )
+                              .toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
