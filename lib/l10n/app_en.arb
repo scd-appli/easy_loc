@@ -20,5 +20,7 @@
     "french": "French",
     "system": "System",
     "light": "Light",
-    "dark": "Dark"
+    "dark": "Dark",
+    "historyTitle": "History",
+    "emptyHistory": "Empty history"
 }

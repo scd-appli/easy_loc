@@ -5,6 +5,7 @@ import '../components/card.dart';
 import '../components/custom_app_bar.dart';
 import '../components/isbn_input_form.dart';
 import '../components/scan_button.dart';
+import '../functions/history_modele.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _isbnController = TextEditingController();
+  final HistoryModele _history = HistoryModele();
 
   List<Map<String, dynamic>>? _data;
   String? _noData;
@@ -58,13 +60,15 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void send() {
+  Future<void> send({bool? fromHistory}) async {
     String isbn = _isbnController.text;
     // if the isbn is correct
     if (isISBN10(isbn) || isISBN13(isbn)) {
       setState(() {
         _fetchData(isbn);
         _validInput = true;
+        if (fromHistory != null && fromHistory) return;
+        _history.add(isbn);
       });
     } else {
       setState(() {
@@ -92,7 +96,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ],
-      leading: const Icon(Icons.history, size: 30),
+      leading: IconButton(
+        icon: Icon(Icons.history),
+        iconSize: 30,
+        onPressed: () async {
+          dynamic isbn = await Navigator.pushNamed(context, '/history');
+          if (isbn != null) {
+            _isbnController.text = isbn;
+            send(fromHistory: true);
+          }
+        },
+      ),
     );
   }
 
@@ -131,88 +145,83 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       );
-    } else {
-      // State when data is loaded (research results shown)
-      return GestureDetector(
-        onTap: () {
-          // Unfocus when tapped outside the TextField
-          FocusScope.of(context).unfocus();
-        },
-        child: Scaffold(
-          resizeToAvoidBottomInset: true,
-          appBar: appBar(
-            onTitleTap: () {
-              setState(() {
-                _data = null;
-                _isbnController.clear();
-                _validInput = true;
-                _noData = null;
-              });
-            },
-          ),
-          floatingActionButton: ScanButton(
-            onSend: send,
-            isbnController: _isbnController,
-          ),
-          body: RefreshIndicator(
-            onRefresh: () => _fetchData(_isbnController.text),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IsbnInputForm(
-                  controller: _isbnController,
-                  isValid: _validInput,
-                  onChanged: (value) {
-                    if (!_validInput) {
-                      setState(() {
-                        _validInput = true;
-                      });
-                    }
-                  },
-                  noDataMessage:
-                      _noData != null
-                          ? "${l10n.noPPNAssociated}: $_noData"
-                          : null,
-                  onSend: send,
-                  padding: 17,
+    }
+
+    // State when data is loaded (research results shown)
+    return GestureDetector(
+      onTap: () {
+        // Unfocus when tapped outside the TextField
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        appBar: appBar(
+          onTitleTap: () {
+            setState(() {
+              _data = null;
+              _isbnController.clear();
+              _validInput = true;
+              _noData = null;
+            });
+          },
+        ),
+        floatingActionButton: ScanButton(
+          onSend: send,
+          isbnController: _isbnController,
+        ),
+        body: RefreshIndicator(
+          onRefresh: () => send(fromHistory: true),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IsbnInputForm(
+                controller: _isbnController,
+                isValid: _validInput,
+                onChanged: (value) {
+                  if (!_validInput) {
+                    setState(() {
+                      _validInput = true;
+                    });
+                  }
+                },
+                noDataMessage:
+                    _noData != null
+                        ? "${l10n.noPPNAssociated}: $_noData"
+                        : null,
+                onSend: send,
+                padding: 17,
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 5),
+                child: Text(
+                  _count == 0
+                      ? l10n.noLibraryGotThis
+                      : "${l10n.foundIn} $_count ${_count == 1 ? l10n.library : l10n.libraries}",
                 ),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 5),
-                  child: Text(
-                    _count == 0
-                        ? l10n.noLibraryGotThis
-                        : "${l10n.foundIn} $_count ${_count == 1 ? l10n.library : l10n.libraries}",
+              ),
+              Expanded(
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  interactive: true,
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 95.0),
+                    children:
+                        _data!
+                            .map(
+                              (element) => CustomCard(
+                                title: element['location'],
+                                longitude: element['longitude'],
+                                latitude: element['latitude'],
+                              ),
+                            )
+                            .toList(),
                   ),
                 ),
-                Expanded(
-                  child: Scrollbar(
-                    thumbVisibility: true,
-                    interactive: true,
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(
-                        15.0,
-                        15.0,
-                        15.0,
-                        95.0,
-                      ),
-                      children:
-                          _data!
-                              .map(
-                                (element) => CustomCard(
-                                  location: element['location'],
-                                  longitude: element['longitude'],
-                                  latitude: element['latitude'],
-                                ),
-                              )
-                              .toList(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 }

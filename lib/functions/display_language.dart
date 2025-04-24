@@ -8,6 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 enum SupportedLanguages { system, en, fr }
 
 class DisplayLanguage {
+  final String key = "lang";
   SupportedLanguages _languageSetting;
   SharedPreferencesAsync sharred;
 
@@ -42,13 +43,13 @@ class DisplayLanguage {
     if (_languageSetting == setting) return; // No change needed
 
     _languageSetting = setting;
-    await sharred.setInt('lang', supportedLanguageToInt(_languageSetting));
+    await sharred.setInt(key, supportedLanguageToInt(_languageSetting));
 
     EasyLoc.of(context).changeLocale(getEffectiveLocale());
   }
 
   Future<Locale> loadSavedSetting() async {
-    int? n = await sharred.getInt('lang');
+    int? n = await sharred.getInt("key");
     _languageSetting = intToSupportedLanguage(
       n ?? supportedLanguageToInt(SupportedLanguages.system),
     );
