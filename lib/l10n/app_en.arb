@@ -12,5 +12,13 @@
     "noLibraryGotThis": "No library has this item.",
     "foundIn": "Found in",
     "library": "librarie",
-    "libraries": "librairies"
+    "libraries": "librairies",
+    "settingsTitle": "Settings",
+    "displayMode": "Display mode",
+    "language": "Language",
+    "english": "English",
+    "french": "French",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
 }

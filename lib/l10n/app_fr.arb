@@ -12,5 +12,13 @@
     "noLibraryGotThis": "Aucune bibliothèque ne possède cet article.",
     "foundIn": "Trouvé dans",
     "library": "bibliothèque",
-    "libraries": "bibliothèques"
+    "libraries": "bibliothèques",
+    "settingsTitle": "Paramètres",
+    "displayMode": "Mode d'affichage",
+    "language": "Langue",
+    "english": "Anglais",
+    "french": "Français",
+    "system": "Système",
+    "light": "Clair",
+    "dark": "Sombre"
 }

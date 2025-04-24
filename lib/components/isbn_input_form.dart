@@ -23,6 +23,7 @@ class IsbnInputForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Use ValueListenableBuilder to rebuild suffixIcon when controller text changes
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
@@ -44,7 +45,8 @@ class IsbnInputForm extends StatelessWidget {
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       labelText: "ISBN",
-                      errorText: isValid ? null : AppLocalizations.of(context)!.invalidInput,
+                      errorText:
+                          isValid ? null : l10n.invalidInput, // Use variable
                       suffixIcon:
                           value.text.isNotEmpty
                               ? IconButton(

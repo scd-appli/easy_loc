@@ -37,11 +37,10 @@ class ScanButton extends StatelessWidget {
 }
 
 void scan(BuildContext context, TextEditingController isbnController) async {
+  final l10n = AppLocalizations.of(context)!;
+
   try {
     var result = await BarcodeScanner.scan();
-
-    // Check if the widget is still mounted before using the context
-    if (!context.mounted) return;
 
     // Handle the result
     switch (result.type) {
@@ -55,7 +54,7 @@ void scan(BuildContext context, TextEditingController isbnController) async {
         showSnackBar(
           context,
           Text(
-            AppLocalizations.of(context)!.scanCancelledUser,
+            l10n.scanCancelledUser, // Use variable
             style: TextStyle(color: Colors.black),
           ),
         );
@@ -66,7 +65,7 @@ void scan(BuildContext context, TextEditingController isbnController) async {
         showSnackBar(
           context,
           Text(
-            '${AppLocalizations.of(context)!.scanFailed}: ${result.rawContent}',
+            '${l10n.scanFailed}: ${result.rawContent}', // Use variable
             style: TextStyle(color: Colors.black),
           ),
         );
@@ -78,7 +77,7 @@ void scan(BuildContext context, TextEditingController isbnController) async {
       showSnackBar(
         context,
         Text(
-          AppLocalizations.of(context)!.cameraAccessDenied,
+          l10n.cameraAccessDenied, // Use variable
           style: TextStyle(color: Colors.black),
         ),
       );
@@ -87,7 +86,7 @@ void scan(BuildContext context, TextEditingController isbnController) async {
       showSnackBar(
         context,
         Text(
-          '${AppLocalizations.of(context)!.unknowError}: $e',
+          '${l10n.unknowError}: $e', // Use variable
           style: TextStyle(color: Colors.black),
         ),
       );
@@ -97,7 +96,7 @@ void scan(BuildContext context, TextEditingController isbnController) async {
     showSnackBar(
       context,
       Text(
-        AppLocalizations.of(context)!.scanCancelledBeforeData,
+        l10n.scanCancelledBeforeData, // Use variable
         style: TextStyle(color: Colors.black),
       ),
     );
@@ -106,7 +105,7 @@ void scan(BuildContext context, TextEditingController isbnController) async {
     showSnackBar(
       context,
       Text(
-        '${AppLocalizations.of(context)!.unexpectedError}: $e',
+        '${l10n.unexpectedError}: $e', // Use variable
         style: TextStyle(color: Colors.black),
       ),
     );

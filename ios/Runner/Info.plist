@@ -52,5 +52,10 @@
 		</array>
 		<key>NSCameraUsageDescription</key>
 		<string>Camera permission is required for barcode scanning.</string>
+		<key>CFBundleLocalizations</key>
+		<array>
+			<string>en</string>
+			<string>fr</string>
+		</array>
 	</dict>
 </plist>
