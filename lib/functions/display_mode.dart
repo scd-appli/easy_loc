@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 enum DisplayMode { system, light, dark }
 
 class Mode {
+  final String key = "mode";
   DisplayMode _mode;
   SharedPreferencesAsync sharred;
 
@@ -13,14 +14,14 @@ class Mode {
 
   void changeMode(BuildContext context, DisplayMode mode) async {
     _mode = mode;
-    await sharred.setInt("mode", displayModeToInt(mode));
+    await sharred.setInt(key, displayModeToInt(mode));
     EasyLoc.of(context).changeTheme(Mode.displayModeToThemeMode(mode));
   }
 
   DisplayMode get() => _mode;
 
   Future<DisplayMode> getSync() async {
-    int? n = await sharred.getInt("mode");
+    int? n = await sharred.getInt(key);
 
     if (n == null) {
       _mode = DisplayMode.system;
