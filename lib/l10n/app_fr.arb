@@ -20,5 +20,7 @@
     "french": "Français",
     "system": "Système",
     "light": "Clair",
-    "dark": "Sombre"
+    "dark": "Sombre",
+    "historyTitle": "Historique",
+    "emptyHistory": "Historique vide"
 }
