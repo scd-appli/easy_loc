@@ -49,7 +49,7 @@ class DisplayLanguage {
   }
 
   Future<Locale> loadSavedSetting() async {
-    int? n = await sharred.getInt("key");
+    int? n = await sharred.getInt(key);
     _languageSetting = intToSupportedLanguage(
       n ?? supportedLanguageToInt(SupportedLanguages.system),
     );
