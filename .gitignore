@@ -56,3 +56,4 @@ windows/
 !ios/Runner/Info.plist
 !android/app/src/main/AndroidManifest.xml
 !ios/Podfile
+!android/app/build.gradle.kts
