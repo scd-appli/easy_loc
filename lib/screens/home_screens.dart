@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   thumbVisibility: true,
                   interactive: true,
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 95.0),
+                    padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 180.0),
                     children:
                         _data!
                             .map(

@@ -58,9 +58,29 @@ class _HistoryState extends State<History> {
         title: l10n.historyTitle,
         actions: [
           IconButton(
-            onPressed: () async {
-              await _history.deleteAll();
-              await _sync();
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: Text(l10n.deleteHistory),
+                      content: Text(l10n.deleteConfirmation),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(l10n.cancel, style: TextStyle(color: Theme.of(context).primaryColor),),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await _history.deleteAll();
+                            await _sync();
+                            if (mounted) Navigator.pop(context);
+                          },
+                          child: Text(l10n.delete, style: TextStyle(color: Colors.red[500]),),
+                        ),
+                      ],
+                    ),
+              );
             },
             icon: Icon(Icons.delete, color: Colors.red[500]),
           ),
