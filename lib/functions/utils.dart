@@ -28,33 +28,29 @@ class IsISBN extends TextInputFormatter {
   }
 }
 
-bool isISBN10(String value) {
-  RegExp patternISBN = RegExp(
-    // Match either compact (9 digits + check) or hyphenated (groups + check)
-    r'^(?:' // Start non-capturing group for alternatives
-    // Alternative 1: Compact ISBN-10. Match 9 digits.
-    r'(?<number>\d{9})'
-    r'|' // OR
-    // Alternative 2: Hyphenated ISBN-10.
-    // Use lookahead to assert total length is 13 characters.
-    r'(?=[\dX -]{13}$)'
-    // Match the hyphenated groups.
-    r'(?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -]'
-    r')' // End non-capturing group for alternatives
-    // Match the final check digit (must be a digit or 'X').
-    r'(?<checkDigit>[\dX])$',
-  );
+final isbn10Regex = RegExp(
+  // Match either compact (9 digits + check) or hyphenated (groups + check)
+  r'^(?:' // Start non-capturing group for alternatives
+  // Alternative 1: Compact ISBN-10. Match 9 digits.
+  r'(?<number>\d{9})'
+  r'|' // OR
+  // Alternative 2: Hyphenated ISBN-10.
+  // Use lookahead to assert total length is 13 characters.
+  r'(?=[\dX -]{13}$)'
+  // Match the hyphenated groups.
+  r'(?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -]'
+  r')' // End non-capturing group for alternatives
+  // Match the final check digit (must be a digit or 'X').
+  r'(?<checkDigit>[\dX])$',
+);
 
-  return patternISBN.hasMatch(value);
-}
+final isbn13Regex = RegExp(
+  r'^(?<gs1>\d{3})(?:(?<number>\d{9})|(?=[\d -]{14}$)[ -](?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -])(?<checkDigit>\d)$',
+);
 
-bool isISBN13(String value) {
-  RegExp patternISBN = RegExp(
-    r'^(?<gs1>\d{3})(?:(?<number>\d{9})|(?=[\d -]{14}$)[ -](?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -])(?<checkDigit>\d)$',
-  );
+bool isISBN10(String value) => isbn10Regex.hasMatch(value);
 
-  return patternISBN.hasMatch(value);
-}
+bool isISBN13(String value) => isbn13Regex.hasMatch(value);
 
 Future<dynamic> getAPI(String url) async {
   var response = await http.get(

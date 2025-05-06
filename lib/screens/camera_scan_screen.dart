@@ -4,9 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import '../components/snack_bar.dart';
 import '../components/custom_app_bar.dart';
 import 'package:flutter/services.dart';
+import '../functions/utils.dart';
 
 class CameraScanScreen extends StatefulWidget {
   const CameraScanScreen({super.key});
@@ -21,13 +23,13 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
   final BarcodeScanner _barcodeScanner = BarcodeScanner(
     formats: [BarcodeFormat.ean13, BarcodeFormat.unknown],
   );
+  final _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
   bool _isProcessing = false;
   bool _canProcess = true;
   Timer? _processingDelayTimer;
   bool _isCameraInitialized = false; // Track initialization state
   String? _initializationError; // Store initialization error message
 
-  // Add the orientations map from the example
   final _orientations = {
     DeviceOrientation.portraitUp: 0,
     DeviceOrientation.landscapeLeft: 90,
@@ -110,57 +112,95 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
   }
 
   Future<void> _processCameraImage(CameraImage image) async {
-    if (!_canProcess || _isProcessing || !mounted || !_isCameraInitialized)
+    if (!_canProcess || _isProcessing || !mounted || !_isCameraInitialized) {
       return;
+    }
 
-    _canProcess = false; // Prevent processing next frame immediately
+    _isProcessing = true; // Mark as processing for this entire frame attempt
+    _canProcess = false; // Prevent next frame from processing immediately
 
     final inputImage = _inputImageFromCameraImage(image);
     if (inputImage == null) {
       debugPrint("_inputImageFromCameraImage returned null. Skipping frame.");
-      _resetProcessingDelay(); // Allow next frame if conversion failed
+      if (mounted) {
+        // Check mounted before resetting state
+        _isProcessing = false;
+        _resetProcessingDelay();
+      }
       return;
     }
 
     try {
+      // 1. Try Barcode Scanning
       final List<Barcode> barcodes = await _barcodeScanner.processImage(
         inputImage,
       );
 
-      if (barcodes.isNotEmpty && mounted && !_isProcessing) {
-        _isProcessing = true; // Mark as processing to prevent multiple pops
+      if (barcodes.isNotEmpty && mounted) {
         String? barcodeValue = barcodes.first.rawValue;
-        String? barcodeType =
-            barcodes.first.format.name; // Get barcode type name
-        debugPrint(
-          "Barcode detected! Type: $barcodeType, Value: $barcodeValue",
-        ); // Log detected barcode
-
         if (barcodeValue != null) {
-          await _stopImageStream(); // Stop stream before popping
-          // Ensure widget is still mounted before popping
+          await _stopImageStream();
           if (mounted) {
             Navigator.pop(context, barcodeValue);
           }
-          // No need to reset _isProcessing here as the screen is disposed
-        } else {
-          debugPrint("Detected barcode has null value.");
-          _isProcessing = false; // Reset if value is null
-          _resetProcessingDelay(); // Allow next frame
+          return;
         }
-      } else if (mounted) {
-        // Check mounted before resetting delay
-        // No barcode found or already processing, allow next frame after delay
-        _resetProcessingDelay();
+      }
+
+      // 2. If no barcode popped (or barcodeValue was null), try Text Recognition
+      final RecognizedText recognizedText = await _textRecognizer.processImage(
+        inputImage,
+      );
+
+      if (mounted) {
+        final RegExp search13 = RegExp(
+          isbn13Regex.pattern.substring(1, isbn13Regex.pattern.length - 1),
+        );
+        final RegExp search10 = RegExp(
+          isbn10Regex.pattern.substring(1, isbn10Regex.pattern.length - 1),
+        );
+
+        for (TextBlock block in recognizedText.blocks) {
+          for (TextLine line in block.lines) {
+            String currentLineText = line.text;
+            String? isbnValue;
+
+            RegExpMatch? match13 = search13.firstMatch(currentLineText);
+            if (match13 != null) {
+              String potentialIsbn = match13.group(0)!;
+              if (isISBN13(potentialIsbn)) {
+                isbnValue = potentialIsbn;
+              }
+            }
+
+            if (isbnValue == null) {
+              RegExpMatch? match10 = search10.firstMatch(currentLineText);
+              if (match10 != null) {
+                String potentialIsbn = match10.group(0)!;
+                if (isISBN10(potentialIsbn)) {
+                  isbnValue = potentialIsbn;
+                }
+              }
+            }
+
+            if (isbnValue != null) {
+              await _stopImageStream(); // Add this before popping for text
+              if (mounted) {
+                Navigator.pop(context, isbnValue);
+              }
+              return;
+            }
+          }
+        }
       }
     } catch (e, stackTrace) {
-      // Catch stack trace too
       debugPrint('****** Error processing image with ML Kit: $e');
-      debugPrint('****** Stack Trace: $stackTrace'); // Print stack trace
+      debugPrint('****** Stack Trace: $stackTrace');
+    } finally {
+      // This executes if no early 'return' (due to a pop) occurred, or if an error happened.
       if (mounted) {
-        // Check mounted before resetting state
-        _isProcessing = false; // Reset on error
-        _resetProcessingDelay(); // Allow next frame
+        _isProcessing = false;
+        _resetProcessingDelay();
       }
     }
   }
@@ -332,9 +372,9 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
   @override
   void dispose() {
     _processingDelayTimer?.cancel();
-    // Use a separate async function to handle disposal
     _disposeCameraResources();
     _barcodeScanner.close();
+    _textRecognizer.close();
     super.dispose();
   }
 
@@ -363,7 +403,6 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     if (_initializationError != null) {
-      // Show error message if initialization failed
       body = Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -425,12 +464,10 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
       // Show loading indicator until controller is initialized
       body = const Center(child: CircularProgressIndicator());
     } else {
-      // Show camera preview if initialized successfully
       body = Stack(
         fit: StackFit.expand,
         children: [
           Center(
-            // Use try-catch for CameraPreview as a safety net
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.7,
               height: MediaQuery.of(context).size.height * 0.3,
@@ -440,7 +477,6 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
               ),
             ),
           ),
-          // Viewfinder overlay
           Center(
             child: Container(
               width: MediaQuery.of(context).size.width * 0.7,
