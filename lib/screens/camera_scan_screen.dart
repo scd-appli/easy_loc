@@ -71,7 +71,10 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
         ResolutionPreset.medium,
         enableAudio: false,
         // yuv420 format which is more widely supported
-        imageFormatGroup: ImageFormatGroup.yuv420,
+        imageFormatGroup:
+            defaultTargetPlatform == TargetPlatform.iOS
+                ? ImageFormatGroup.bgra8888
+                : ImageFormatGroup.yuv420,
       );
 
       await _controller!.initialize();
