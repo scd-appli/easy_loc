@@ -22,5 +22,7 @@
     "light": "Light",
     "dark": "Dark",
     "historyTitle": "History",
-    "emptyHistory": "Empty history"
+    "emptyHistory": "Empty history",
+    "goBack": "Go back",
+    "retry": "Retry"
 }
