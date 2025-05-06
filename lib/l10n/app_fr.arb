@@ -22,5 +22,7 @@
     "light": "Clair",
     "dark": "Sombre",
     "historyTitle": "Historique",
-    "emptyHistory": "Historique vide"
+    "emptyHistory": "Historique vide",
+    "goBack": "Retour",
+    "retry": "Réessayer"
 }
