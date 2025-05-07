@@ -57,3 +57,4 @@ windows/
 !android/app/src/main/AndroidManifest.xml
 !ios/Podfile
 !android/app/build.gradle.kts
+!android/app/proguard-rules.pro
