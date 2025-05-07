@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
             iconSize: 30,
             onPressed: () async {
               await Navigator.pushNamed(context, '/settings');
-              FocusScope.of(context).unfocus();
+              if (mounted) FocusScope.of(context).unfocus();
             },
           ),
         ),
@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _isbnController.text = isbn;
             await send(fromHistory: true);
           }
-          FocusScope.of(context).unfocus();
+          if(mounted) FocusScope.of(context).unfocus();
         },
       ),
     );

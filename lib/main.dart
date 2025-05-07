@@ -27,6 +27,7 @@ class EasyLoc extends StatefulWidget {
   @override
   State<EasyLoc> createState() => _EasyLocState();
 
+  // ignore: library_private_types_in_public_api
   static _EasyLocState of(BuildContext context) =>
       context.findAncestorStateOfType<_EasyLocState>()!;
 }

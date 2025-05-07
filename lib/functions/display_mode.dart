@@ -15,7 +15,7 @@ class Mode {
   void changeMode(BuildContext context, DisplayMode mode) async {
     _mode = mode;
     await sharred.setInt(key, displayModeToInt(mode));
-    EasyLoc.of(context).changeTheme(Mode.displayModeToThemeMode(mode));
+    if(context.mounted) EasyLoc.of(context).changeTheme(Mode.displayModeToThemeMode(mode));
   }
 
   DisplayMode get() => _mode;
