@@ -24,5 +24,9 @@
     "historyTitle": "History",
     "emptyHistory": "Empty history",
     "goBack": "Go back",
-    "retry": "Retry"
+    "retry": "Retry",
+    "deleteHistory":"Delete the history",
+    "deleteConfirmation":"It's an action irreversible",
+    "delete":"Delete",
+    "cancel":"Cancel"
 }

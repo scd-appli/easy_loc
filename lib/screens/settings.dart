@@ -6,6 +6,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../components/custom_drop_down_menu.dart';
 import '../functions/display_mode.dart';
 import '../functions/display_language.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:icons_plus/icons_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -16,6 +19,7 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
+  PackageInfo? packageInfo;
 
   late Mode _mode;
   late DisplayLanguage _lang;
@@ -33,7 +37,7 @@ class _SettingsState extends State<Settings> {
     setState(() {
       _isLoading = true;
     });
-    await Future.wait([_loadMode(), _loadLang()]);
+    await Future.wait([_loadMode(), _loadLang(), _loadInfo()]);
     setState(() {
       _isLoading = false;
     });
@@ -45,6 +49,14 @@ class _SettingsState extends State<Settings> {
 
   Future<void> _loadLang() async {
     await _lang.loadSavedSetting();
+  }
+
+  Future<void> _loadInfo() async {
+    try {
+      packageInfo = await PackageInfo.fromPlatform();
+    } catch (e, s) {
+      debugPrint("Error loading settings data: $e\n$s");
+    }
   }
 
   void changeMode(DisplayMode value) {
@@ -98,7 +110,7 @@ class _SettingsState extends State<Settings> {
       child: Scaffold(
         appBar: CustomAppBar(title: l10n.settingsTitle),
         body: Padding(
-          padding: EdgeInsets.only(top: 20, right: 30, left: 30),
+          padding: EdgeInsets.only(top: 20, right: 30, left: 30, bottom: 30),
           child: Center(
             child: Column(
               children: [
@@ -158,6 +170,29 @@ class _SettingsState extends State<Settings> {
                               )
                               ? _lang.getCurrentSetting()
                               : SupportedLanguages.en,
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.fmd_bad_outlined, size: 80),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 20),
+                      child: Column(
+                        children: [
+                          Text(l10n.appName, style: TextStyle(fontSize: 25)),
+                          Text("Version: ${packageInfo?.version ?? "Unknow"}"),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(AntDesign.github_outline, size: 60),
+                      onPressed:
+                          () => launchUrl(
+                            Uri(scheme: "https", host: "www.github.com", path: "scd-appli/easy_loc"),
+                          ),
                     ),
                   ],
                 ),

@@ -24,5 +24,9 @@
     "historyTitle": "Historique",
     "emptyHistory": "Historique vide",
     "goBack": "Retour",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "deleteHistory":"Supprimer l'historique",
+    "deleteConfirmation":"C'est une action irreversible",
+    "delete":"Supprimer",
+    "cancel":"Annuler"
 }

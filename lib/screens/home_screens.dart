@@ -90,8 +90,9 @@ class _HomeScreenState extends State<HomeScreen> {
           child: IconButton(
             icon: Icon(Icons.settings_outlined),
             iconSize: 30,
-            onPressed: () {
-              Navigator.pushNamed(context, '/settings');
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/settings');
+              FocusScope.of(context).unfocus();
             },
           ),
         ),
@@ -103,8 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
           dynamic isbn = await Navigator.pushNamed(context, '/history');
           if (isbn != null) {
             _isbnController.text = isbn;
-            send(fromHistory: true);
+            await send(fromHistory: true);
           }
+          FocusScope.of(context).unfocus();
         },
       ),
     );
@@ -204,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   thumbVisibility: true,
                   interactive: true,
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 95.0),
+                    padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 180.0),
                     children:
                         _data!
                             .map(
