@@ -74,7 +74,7 @@ class _HistoryState extends State<History> {
                           onPressed: () async {
                             await _history.deleteAll();
                             await _sync();
-                            if (mounted) Navigator.pop(context);
+                            if (context.mounted) Navigator.pop(context);
                           },
                           child: Text(l10n.delete, style: TextStyle(color: Colors.red[500]),),
                         ),

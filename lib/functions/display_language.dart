@@ -45,7 +45,7 @@ class DisplayLanguage {
     _languageSetting = setting;
     await sharred.setInt(key, supportedLanguageToInt(_languageSetting));
 
-    EasyLoc.of(context).changeLocale(getEffectiveLocale());
+    if (context.mounted) EasyLoc.of(context).changeLocale(getEffectiveLocale());
   }
 
   Future<Locale> loadSavedSetting() async {
