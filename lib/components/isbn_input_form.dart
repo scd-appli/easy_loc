@@ -46,7 +46,7 @@ class IsbnInputForm extends StatelessWidget {
                       border: const OutlineInputBorder(),
                       labelText: "ISBN",
                       errorText:
-                          isValid ? null : l10n.invalidInput, // Use variable
+                          isValid ? null : l10n.invalidInput,
                       suffixIcon:
                           value.text.isNotEmpty
                               ? IconButton(

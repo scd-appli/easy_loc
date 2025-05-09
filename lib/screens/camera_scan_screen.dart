@@ -43,6 +43,33 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
     _initializeCamera();
   }
 
+  Future<void> search(RecognizedText recognizedText) async {
+    for (TextBlock block in recognizedText.blocks) {
+      for (TextLine line in block.lines) {
+        String currentLineText = line.text;
+        String? value;
+
+        for (List format in acceptedSearch) {
+          RegExpMatch? match = format[0].firstMatch(currentLineText);
+          if (match != null) {
+            String potential = match.group(0)!;
+            if (format[1](potential)) {
+              value = potential;
+            }
+          }
+
+          if (value != null) {
+            await _stopImageStream(); // Add this before popping for text
+            if (mounted) {
+              Navigator.pop(context, value);
+            }
+            return;
+          }
+        }
+      }
+    }
+  }
+
   Future<void> _initializeCamera() async {
     // Reset error state on retry
     if (mounted) {
@@ -156,45 +183,7 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
       );
 
       if (mounted) {
-        final RegExp search13 = RegExp(
-          isbn13Regex.pattern.substring(1, isbn13Regex.pattern.length - 1),
-        );
-        final RegExp search10 = RegExp(
-          isbn10Regex.pattern.substring(1, isbn10Regex.pattern.length - 1),
-        );
-
-        for (TextBlock block in recognizedText.blocks) {
-          for (TextLine line in block.lines) {
-            String currentLineText = line.text;
-            String? isbnValue;
-
-            RegExpMatch? match13 = search13.firstMatch(currentLineText);
-            if (match13 != null) {
-              String potentialIsbn = match13.group(0)!;
-              if (isISBN13(potentialIsbn)) {
-                isbnValue = potentialIsbn;
-              }
-            }
-
-            if (isbnValue == null) {
-              RegExpMatch? match10 = search10.firstMatch(currentLineText);
-              if (match10 != null) {
-                String potentialIsbn = match10.group(0)!;
-                if (isISBN10(potentialIsbn)) {
-                  isbnValue = potentialIsbn;
-                }
-              }
-            }
-
-            if (isbnValue != null) {
-              await _stopImageStream(); // Add this before popping for text
-              if (mounted) {
-                Navigator.pop(context, isbnValue);
-              }
-              return;
-            }
-          }
-        }
+        await search(recognizedText);
       }
     } catch (e, stackTrace) {
       debugPrint('****** Error processing image with ML Kit: $e');
