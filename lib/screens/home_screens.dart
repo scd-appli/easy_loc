@@ -24,12 +24,23 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _validInput = true;
   int _count = 0;
 
-  Future<void> _fetchData(String isbn) async {
+  Future<void> _fetchData(String isbn, Format format) async {
+
     setState(() {
       _noData = null;
     });
 
-    List<Map<String, String>>? ppnList = await isbn2ppn(isbn);
+    late List<Map<String, String>>? ppnList;
+
+    switch(format){
+      case Format.isbn:
+            ppnList = await isbn2ppn(isbn);
+            break;
+      case Format.issn:
+            ppnList = await issn2ppn(isbn);
+            break;
+    }
+
     if (ppnList == null || ppnList.isEmpty) {
       setState(() {
         _noData = isbn;
@@ -61,14 +72,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> send({bool? fromHistory}) async {
-    String isbn = _isbnController.text;
-    // if the isbn is correct
-    if (isISBN10(isbn) || isISBN13(isbn)) {
+    String value = _isbnController.text;
+
+    if (isValidFormat(value)) {
       setState(() {
-        _fetchData(isbn);
+        _fetchData(value,getFormat(value)!);
         _validInput = true;
         if (fromHistory != null && fromHistory) return;
-        _history.add(isbn);
+        _history.add(value);
       });
     } else {
       setState(() {

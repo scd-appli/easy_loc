@@ -48,9 +48,47 @@ final isbn13Regex = RegExp(
   r'^(?<gs1>\d{3})(?:(?<number>\d{9})|(?=[\d -]{14}$)[ -](?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -])(?<checkDigit>\d)$',
 );
 
+final issnRegex = RegExp(r'^\d{4}-\d{3}[\dxX]$');
+
 bool isISBN10(String value) => isbn10Regex.hasMatch(value);
 
 bool isISBN13(String value) => isbn13Regex.hasMatch(value);
+
+bool isISSN(String value) => issnRegex.hasMatch(value);
+
+final RegExp searchISBN13 = RegExp(
+  isbn13Regex.pattern.substring(1, isbn13Regex.pattern.length - 1),
+);
+final RegExp searchISBN10 = RegExp(
+  isbn10Regex.pattern.substring(1, isbn10Regex.pattern.length - 1),
+);
+
+final RegExp searchISSN = RegExp(
+  issnRegex.pattern.substring(1, issnRegex.pattern.length - 1),
+);
+
+enum Format { isbn, issn }
+
+List<bool Function(String)> acceptedFormat = [isISBN10, isISBN13, isISSN];
+List<List<dynamic>> acceptedSearch = [
+  [searchISBN13, isISBN13],
+  [searchISBN10, isISBN10],
+  [searchISSN, isISSN],
+];
+
+bool isValidFormat(String value) {
+  for (var func in acceptedFormat) {
+    if (func(value)) return true;
+  }
+
+  return false;
+}
+
+Format? getFormat(String value){
+  if (isISBN10(value) || isISBN13(value)) return Format.isbn;
+  if (isISSN(value)) return Format.issn;
+  return null;
+}
 
 Future<dynamic> getAPI(String url) async {
   var response = await http.get(
@@ -80,6 +118,27 @@ Future<List<Map<String, String>>?> isbn2ppn(String isbn) async {
     return null;
   } catch (e) {
     debugPrint("Error in isbn2ppn: $e");
+    return null;
+  }
+}
+
+Future<List<Map<String,String>>?> issn2ppn(String issn) async{
+    try {
+    final response = await getAPI(
+      "https://www.sudoc.fr/services/issn2ppn/$issn",
+    );
+
+    final result = response['sudoc']?['query']?['result'];
+    if (result is List) {
+      return List<Map<String, String>>.from(
+        result.map((item) => Map<String, String>.from(item)),
+      );
+    } else if (result is Map) {
+      return [Map<String, String>.from(result)];
+    }
+    return null;
+  } catch (e) {
+    debugPrint("Error in issn2ppn: $e");
     return null;
   }
 }
