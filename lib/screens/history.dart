@@ -58,6 +58,12 @@ class _HistoryState extends State<History> {
         title: l10n.historyTitle,
         actions: [
           IconButton(
+            onPressed: () async {
+              await _history.toDownload();
+            },
+            icon: Icon(Icons.save),
+          ),
+          IconButton(
             onPressed: () {
               showDialog(
                 context: context,
@@ -68,7 +74,12 @@ class _HistoryState extends State<History> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text(l10n.cancel, style: TextStyle(color: Theme.of(context).primaryColor),),
+                          child: Text(
+                            l10n.cancel,
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
                         ),
                         TextButton(
                           onPressed: () async {
@@ -76,7 +87,10 @@ class _HistoryState extends State<History> {
                             await _sync();
                             if (context.mounted) Navigator.pop(context);
                           },
-                          child: Text(l10n.delete, style: TextStyle(color: Colors.red[500]),),
+                          child: Text(
+                            l10n.delete,
+                            style: TextStyle(color: Colors.red[500]),
+                          ),
                         ),
                       ],
                     ),
