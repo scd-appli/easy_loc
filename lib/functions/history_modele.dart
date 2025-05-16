@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class HistoryModele {
   final String key = "history";
@@ -53,7 +54,7 @@ class HistoryModele {
       final filePath = await _getFilePath();
       final file = File(filePath);
 
-      if (list.isEmpty){
+      if (list.isEmpty) {
         await file.delete();
         return;
       }
@@ -99,12 +100,42 @@ class HistoryModele {
   }
 
   Future<void> toDownload() async {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      status = await Permission.storage.request();
+    bool permissionGranted = false;
+
+    if (Platform.isAndroid) {
+      final deviceInfo = DeviceInfoPlugin();
+      final androidInfo = await deviceInfo.androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt >= 30) { // Android 11 (API 30) or higher
+        var status = await Permission.manageExternalStorage.status;
+        debugPrint("Android 11+: Initial manageExternalStorage status: $status");
+        if (!status.isGranted) {
+          status = await Permission.manageExternalStorage.request();
+          debugPrint("Android 11+: Status after manageExternalStorage request: $status");
+        }
+        if (status.isGranted) {
+          permissionGranted = true;
+        }
+      } else { // Android 10 (API 29) or older (down to your minSdk)
+        var status = await Permission.storage.status;
+        debugPrint("Android 10 or older: Initial storage status: $status");
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+          debugPrint("Android 10 or older: Status after storage request: $status");
+        }
+        if (status.isGranted) {
+          permissionGranted = true;
+        }
+      }
+    } else {
+      // For non-Android platforms, you might not need special file permissions
+      // or they are handled differently.
+      permissionGranted = true;
     }
 
-    if (status.isGranted) {
+    if (permissionGranted) {
+      debugPrint("Storage permission IS GRANTED for the operation.");
       try {
         final String dlFolderPath = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_DOWNLOAD);
         debugPrint('Public Downloads Path: $dlFolderPath');
@@ -118,7 +149,7 @@ class HistoryModele {
             final csvString = await historyFile.readAsString();
             await dlFile.writeAsString(csvString);
             debugPrint('File saved to: ${dlFile.path}');
-            // Optionally, provide user feedback e.g., via a SnackBar if you have BuildContext
+            // Consider showing a success message to the user (e.g., SnackBar)
           } else {
             debugPrint('History file does not exist, nothing to download.');
           }
@@ -127,12 +158,13 @@ class HistoryModele {
         }
       } catch (e) {
         debugPrint('Error saving to public downloads: $e');
+        // Consider showing an error message to the user
       }
     } else {
-      debugPrint('Storage permission denied.');
-      // Optionally, inform the user that permission is needed
+      debugPrint('Storage permission IS DENIED.');
+      // You should inform the user that the permission is necessary
+      // and guide them on how to grant it (especially for manageExternalStorage
+      // which requires going to system settings).
     }
   }
-
-
 }
