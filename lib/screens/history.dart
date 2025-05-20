@@ -59,7 +59,7 @@ class _HistoryState extends State<History> {
         actions: [
           IconButton(
             onPressed: () async {
-              await _history.toDownload();
+              await _history.toDownload(context);
             },
             icon: Icon(Icons.save),
           ),
@@ -110,17 +110,18 @@ class _HistoryState extends State<History> {
                   return CustomCard(
                     title: element.value,
                     onTap: () => Navigator.pop(context, element.value),
-                    actions: IconButton(
-                      onPressed: () async {
-                        await _history.delete(element.key);
-                        await _sync();
-                      },
-                      icon: Icon(Icons.delete, color: Colors.red[300]),
-                    ),
+                    actions: [
+                      IconButton(onPressed: () {}, icon: Icon(Icons.save, color: Colors.black54,))
+                      ,IconButton(
+                        onPressed: () async {
+                          await _history.delete(element.key);
+                          await _sync();
+                        },
+                        icon: Icon(Icons.delete, color: Colors.red[300]),
+                      ),
+                    ],
                   );
                 })
-                .toList()
-                .reversed
                 .toList(),
       ),
     );

@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'package:easy_loc/components/snack_bar.dart';
 import 'package:external_path/external_path.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
-import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import AppLocalizations
 
 class HistoryModele {
   final String key = "history";
@@ -72,8 +74,11 @@ class HistoryModele {
   Future<void> add(String isbn) async {
     List<String> list = await get() ?? [];
 
-    list.add(isbn);
-    await _saveList(list);
+    List<String> rever = list.reversed.toList();
+    rever.add(isbn);
+    List<String> newList = rever.reversed.toList();
+
+    await _saveList(newList);
   }
 
   Future<void> deleteAll() async {
@@ -99,7 +104,8 @@ class HistoryModele {
     await _saveList(list);
   }
 
-  Future<void> toDownload() async {
+  Future<void> toDownload(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     bool permissionGranted = false;
 
     if (Platform.isAndroid) {
@@ -129,8 +135,6 @@ class HistoryModele {
         }
       }
     } else {
-      // For non-Android platforms, you might not need special file permissions
-      // or they are handled differently.
       permissionGranted = true;
     }
 
@@ -141,7 +145,19 @@ class HistoryModele {
         debugPrint('Public Downloads Path: $dlFolderPath');
 
         if (dlFolderPath.isNotEmpty) {
-          final dlFile = File('$dlFolderPath/historyEasyLoc.csv');
+          String baseFileName = 'historyEasyLoc';
+          String extension = '.csv';
+          String fileName = baseFileName + extension;
+          File dlFile = File('$dlFolderPath/$fileName');
+          int counter = 1;
+
+          // Check if file exists and find a unique name
+          while (await dlFile.exists()) {
+            fileName = '$baseFileName($counter)$extension';
+            dlFile = File('$dlFolderPath/$fileName');
+            counter++;
+          }
+
           final historyFilePath = await _getFilePath();
           final historyFile = File(historyFilePath);
 
@@ -149,7 +165,7 @@ class HistoryModele {
             final csvString = await historyFile.readAsString();
             await dlFile.writeAsString(csvString);
             debugPrint('File saved to: ${dlFile.path}');
-            // Consider showing a success message to the user (e.g., SnackBar)
+            if(context.mounted) showSnackBar(context, Text(l10n.fileSaved));
           } else {
             debugPrint('History file does not exist, nothing to download.');
           }
@@ -158,13 +174,10 @@ class HistoryModele {
         }
       } catch (e) {
         debugPrint('Error saving to public downloads: $e');
-        // Consider showing an error message to the user
       }
     } else {
       debugPrint('Storage permission IS DENIED.');
-      // You should inform the user that the permission is necessary
-      // and guide them on how to grant it (especially for manageExternalStorage
-      // which requires going to system settings).
+      if(context.mounted) showSnackBar(context, Text(l10n.permissionDenied));
     }
   }
 }

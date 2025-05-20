@@ -48,7 +48,7 @@ final isbn13Regex = RegExp(
   r'^(?<gs1>\d{3})(?:(?<number>\d{9})|(?=[\d -]{14}$)[ -](?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -])(?<checkDigit>\d)$',
 );
 
-final issnRegex = RegExp(r'^\d{4}-\d{3}[\dxX]$');
+final issnRegex = RegExp(r'^\d{4}-?\d{3}[\dxX]$');
 
 bool isISBN10(String value) => isbn10Regex.hasMatch(value);
 
@@ -69,7 +69,7 @@ final RegExp searchISSN = RegExp(
 
 enum Format { isbn, issn }
 
-List<bool Function(String)> acceptedFormat = [isISBN10, isISBN13, isISSN];
+List<bool Function(String)> acceptedFormat = [isISBN13, isISBN10, isISSN];
 List<List<dynamic>> acceptedSearch = [
   [searchISBN13, isISBN13],
   [searchISBN10, isISBN10],

@@ -28,5 +28,7 @@
     "deleteHistory":"Supprimer l'historique",
     "deleteConfirmation":"C'est une action irreversible",
     "delete":"Supprimer",
-    "cancel":"Annuler"
+    "cancel":"Annuler",
+    "fileSaved":"Fichier enregistrer dans le dossier téléchargement.",
+    "permissionDenied":"Permissions refusées."
 }

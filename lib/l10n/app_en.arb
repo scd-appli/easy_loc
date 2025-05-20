@@ -28,5 +28,7 @@
     "deleteHistory":"Delete the history",
     "deleteConfirmation":"It's an action irreversible",
     "delete":"Delete",
-    "cancel":"Cancel"
+    "cancel":"Cancel",
+    "fileSaved":"File saved in the download folder.",
+    "permissionDenied":"Permission denied."
 }
