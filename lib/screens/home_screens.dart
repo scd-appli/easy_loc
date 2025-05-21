@@ -7,6 +7,7 @@ import '../components/isbn_input_form.dart';
 import '../components/scan_button.dart';
 import '../functions/history_modele.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../functions/api.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

@@ -1,8 +1,23 @@
-import 'dart:convert';
-
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+
+extension StringExtensions on String {
+  int numberOf(String l) {
+    int count = 0;
+    for (var i in split('')) {
+      if (i == l) count++;
+    }
+    return count;
+  }
+
+  String pushToTheEnd(String l){
+    if (numberOf(l) != 1){
+      throw FormatException("The parameter must have exactly one occurence in the string");
+    }
+
+    String newValue = replaceFirst(RegExp(l),"");
+    return newValue+l;
+  }
+}
 
 class IsISBN extends TextInputFormatter {
   @override
@@ -22,33 +37,126 @@ class IsISBN extends TextInputFormatter {
     if (value.length - numbers.length > 4) {
       return oldValue;
     }
+    
+    // Only one X or x
+    if (value.numberOf("X") + value.numberOf("x") > 1) {
+      return oldValue;
+    }
+
+    // if X exist and not at the end, pushed to the end
+    if (value.contains("X") && !value.endsWith("X")){
+      return TextEditingValue(text: value.pushToTheEnd("X"));
+    }
+
+    // if x exist and not at the end, pushed to the end
+    if (value.contains("x") && !value.endsWith("x")){
+      return TextEditingValue(text: value.pushToTheEnd("x"));
+    }
 
     // Resolve
     return newValue;
   }
 }
 
-final isbn10Regex = RegExp(
-  // Match either compact (9 digits + check) or hyphenated (groups + check)
-  r'^(?:' // Start non-capturing group for alternatives
-  // Alternative 1: Compact ISBN-10. Match 9 digits.
-  r'(?<number>\d{9})'
-  r'|' // OR
-  // Alternative 2: Hyphenated ISBN-10.
-  // Use lookahead to assert total length is 13 characters.
-  r'(?=[\dX -]{13}$)'
-  // Match the hyphenated groups.
-  r'(?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -]'
-  r')' // End non-capturing group for alternatives
-  // Match the final check digit (must be a digit or 'X').
-  r'(?<checkDigit>[\dX])$',
+// Regular expression for validating ISBN-10.
+// Supports optional hyphens.
+// Matches: "0306406152", "0-306-40615-2", "030640615X", "0-306-40615-X", "12345-123-1X"
+final RegExp isbn10Regex = RegExp(
+  // 1. Anchor for the start of the string.
+  // ignore: prefer_adjacent_string_concatenation
+  r'^' +
+      // 2. Positive lookahead (?=...) to enforce overall structural rules for the ISBN data.
+      //    This ensures the string is either:
+      //    - Exactly 10 characters (digits or 'X') if no hyphens are used, OR
+      //    - 10-13 characters (digits, 'X', or hyphens) if hyphens are used,
+      //      with a sub-lookahead to check for 1 to 3 hyphen-separated groups of digits.
+      r'(?=' +
+      r'[0-9X]{10}$' + // Case A: Exactly 10 chars (digits 0-9 or 'X'), followed by end of string (no hyphens).
+      r'|' + // OR
+      // Case B (with hyphens):
+      // Inner lookahead: asserts 1 to 3 groups of digits followed by a hyphen.
+      // An ISBN-10 has 4 parts, so up to 3 hyphens.
+      r'(?=(?:[0-9]+[-]){1,3})' +
+      // If inner lookahead passes, the ISBN data (digits, 'X', hyphens) must be 10-13 chars long.
+      r'[-0-9X]{10,13}$' +
+      r')' + // End of positive lookahead.
+      // 3. The main pattern for ISBN-10 parts, allowing optional hyphens:
+      r'[0-9]{1,5}' + // Part 1: Group identifier (1-5 digits).
+      r'[-]?' + // Optional hyphen.
+      r'[0-9]+' + // Part 2: Publisher identifier (1+ digits).
+      r'[-]?' + // Optional hyphen.
+      r'[0-9]+' + // Part 3: Title identifier (1+ digits).
+      r'[-]?' + // Optional hyphen.
+      r'[0-9X]' + // Part 4: Check digit (digit or 'X').
+      // 4. Anchor for the end of the string.
+      r'$',
+  caseSensitive: false,
 );
 
-final isbn13Regex = RegExp(
-  r'^(?<gs1>\d{3})(?:(?<number>\d{9})|(?=[\d -]{14}$)[ -](?<registrationGroup>\d{1,5})[ -](?<registrant>\d{1,7})[ -](?<publication>\d{1,6})[ -])(?<checkDigit>\d)$',
+// Regular expression for validating ISBN-13.
+// Supports optional hyphens.
+// Matches: "9780306406157", "978-0-306-40615-7", "979-10-90639-1-3"
+final RegExp isbn13Regex = RegExp(
+  // 1. Anchor for the start of the string.
+  // ignore: prefer_adjacent_string_concatenation
+  r'^' +
+      // 2. Positive lookahead (?=...) to enforce overall structural rules for the ISBN data.
+      //    This ensures the string is either:
+      //    - Exactly 13 digits if no hyphens are used, OR
+      //    - 13-17 characters (digits or hyphens) if hyphens are used,
+      //      with a sub-lookahead to check for 3 to 4 hyphen-separated groups of digits.
+      r'(?=' +
+      r'[0-9]{13}$' + // Case A: Exactly 13 digits, followed by end of string (no hyphens).
+      r'|' + // OR
+      // Case B (with hyphens):
+      // Inner lookahead: asserts 3 to 4 groups of digits followed by a hyphen.
+      // An ISBN-13 has 5 parts, so up to 4 hyphens.
+      r'(?=(?:[0-9]+[-]){3,4})' +
+      // If inner lookahead passes, the ISBN data (digits, hyphens) must be 13-17 chars long.
+      r'[-0-9]{13,17}$' +
+      r')' + // End of positive lookahead.
+      // 3. The main pattern for ISBN-13 parts, allowing optional hyphens:
+      r'97[89]' + // Part 1: Prefix (must be "978" or "979").
+      r'[-]?' + // Optional hyphen.
+      r'[0-9]{1,5}' + // Part 2: Registration group element (1-5 digits).
+      r'[-]?' + // Optional hyphen.
+      r'[0-9]+' + // Part 3: Registrant element (1+ digits).
+      r'[-]?' + // Optional hyphen.
+      r'[0-9]+' + // Part 4: Publication element (1+ digits).
+      r'[-]?' + // Optional hyphen.
+      r'[0-9]' + // Part 5: Check digit (must be a digit for ISBN-13).
+      // 4. Anchor for the end of the string.
+      r'$',
+  caseSensitive: false,
 );
 
-final issnRegex = RegExp(r'^\d{4}-?\d{3}[\dxX]$');
+// Regular expression for validating ISSN.
+// Supports an optional hyphen.
+// Matches: "12345678", "1234-5678", "1234567X", "1234-567X"
+final RegExp issnRegex = RegExp(
+  // 1. Anchor for the start of the string.
+  // ignore: prefer_adjacent_string_concatenation
+  r'^' +
+      // 2. Positive lookahead (?=...) to enforce overall structural rules for the ISSN data.
+      //    This ensures the string is either:
+      //    - Exactly 8 characters (digits or 'X') if no hyphen is used, OR
+      //    - Exactly 9 characters (digits, 'X', or hyphen) if a hyphen is used.
+      r'(?=' +
+      r'[0-9X]{8}$' + // Case A: Exactly 8 chars (digits 0-9 or 'X'), followed by end of string (no hyphen).
+      r'|' + // OR
+      // Case B (with hyphen):
+      // Exactly 9 chars (digits, 'X', hyphen), with a hyphen at the 5th position.
+      r'[0-9]{4}-[0-9X]{4}$' +
+      r')' + // End of positive lookahead.
+      // 3. The main pattern for ISSN parts:
+      r'\d{4}' + // Part 1: First four digits.
+      r'-?' + // Optional hyphen.
+      r'\d{3}' + // Part 2: Next three digits.
+      r'[\dxX]' + // Part 3: Check digit (digit, 'x', or 'X').
+      // 4. Anchor for the end of the string.
+      r'$',
+  caseSensitive: false,
+);
 
 bool isISBN10(String value) => isbn10Regex.hasMatch(value);
 
@@ -67,9 +175,27 @@ final RegExp searchISSN = RegExp(
   issnRegex.pattern.substring(1, issnRegex.pattern.length - 1),
 );
 
+List<Map<String, String>> sortLibraries(List<Map<String, String>> libraries) {
+  libraries.sort(
+    (a, b) =>
+        a['location']!.toLowerCase().compareTo(b['location']!.toLowerCase()),
+  );
+  return libraries;
+}
+
 enum Format { isbn, issn }
 
-List<bool Function(String)> acceptedFormat = [isISBN13, isISBN10, isISSN];
+List<bool Function(String)> acceptedFormatFunction() {
+  List<bool Function(String)> list = [];
+  // acceptedSearch will use isISBN13, isISBN10, isISSN etc. from this file (utils.dart)
+  for (var type in acceptedSearch) {
+    list.add(type[1] as bool Function(String));
+  }
+  return list;
+}
+
+// searchISBN13, isISBN13, searchISBN10, isISBN10, searchISSN, isISSN
+// are assumed to be defined earlier in this file (utils.dart).
 List<List<dynamic>> acceptedSearch = [
   [searchISBN13, isISBN13],
   [searchISBN10, isISBN10],
@@ -77,131 +203,15 @@ List<List<dynamic>> acceptedSearch = [
 ];
 
 bool isValidFormat(String value) {
-  for (var func in acceptedFormat) {
+  for (var func in acceptedFormatFunction()) {
     if (func(value)) return true;
   }
-
   return false;
 }
 
-Format? getFormat(String value){
+Format? getFormat(String value) {
+  // isISBN10, isISBN13, isISSN are from this file (utils.dart)
   if (isISBN10(value) || isISBN13(value)) return Format.isbn;
   if (isISSN(value)) return Format.issn;
   return null;
-}
-
-Future<dynamic> getAPI(String url) async {
-  var response = await http.get(
-    Uri.parse(url),
-    headers: {'Accept': 'text/json'}, // API negociation to get in json
-  );
-  if (response.statusCode != 200 && response.statusCode != 404) {
-    throw Exception("Failed to fetch, status code : ${response.statusCode}");
-  }
-  return jsonDecode(response.body);
-}
-
-Future<List<Map<String, String>>?> isbn2ppn(String isbn) async {
-  try {
-    final response = await getAPI(
-      "https://www.sudoc.fr/services/isbn2ppn/$isbn",
-    );
-
-    final result = response['sudoc']?['query']?['result'];
-    if (result is List) {
-      return List<Map<String, String>>.from(
-        result.map((item) => Map<String, String>.from(item)),
-      );
-    } else if (result is Map) {
-      return [Map<String, String>.from(result)];
-    }
-    return null;
-  } catch (e) {
-    debugPrint("Error in isbn2ppn: $e");
-    return null;
-  }
-}
-
-Future<List<Map<String,String>>?> issn2ppn(String issn) async{
-    try {
-    final response = await getAPI(
-      "https://www.sudoc.fr/services/issn2ppn/$issn",
-    );
-
-    final result = response['sudoc']?['query']?['result'];
-    if (result is List) {
-      return List<Map<String, String>>.from(
-        result.map((item) => Map<String, String>.from(item)),
-      );
-    } else if (result is Map) {
-      return [Map<String, String>.from(result)];
-    }
-    return null;
-  } catch (e) {
-    debugPrint("Error in issn2ppn: $e");
-    return null;
-  }
-}
-
-Future<List<Map<String, dynamic>>> multiwhere(
-  List<Map<String, String>> ppnList,
-) async {
-  List<Map<String, dynamic>> results = [];
-
-  await Future.wait(
-    ppnList.map((ppnMap) async {
-      String? ppnValue = ppnMap['ppn'];
-      if (ppnValue == null) return;
-
-      try {
-        final response = await getAPI(
-          "https://www.sudoc.fr/services/multiwhere/$ppnValue",
-        );
-
-        final queryResult = response['sudoc']?['query']?['result'];
-        final libraryData = queryResult?['library'];
-
-        List<Map<String, String>> libraries = [];
-        if (libraryData != null) {
-          List<dynamic> rawLibraries = [];
-          if (libraryData is List) {
-            rawLibraries = libraryData;
-          } else if (libraryData is Map) {
-            // Handle case where API returns a single map if only one library
-            rawLibraries = [libraryData];
-          }
-
-          libraries = List<Map<String, String>>.from(
-            rawLibraries
-                .map((item) {
-                  if (item is Map) {
-                    return {
-                      'location': item['shortname']?.toString() ?? '',
-                      'longitude': item['longitude']?.toString() ?? '',
-                      'latitude': item['latitude']?.toString() ?? '',
-                    };
-                  } else {
-                    return {};
-                  }
-                })
-                .where((map) => map.isNotEmpty), // Filter out empty maps
-          );
-        }
-        // Add result for this PPN to the list (synchronized access not strictly needed with Future.wait like this)
-        results.add({'ppn': ppnValue, 'libraries': libraries});
-      } catch (e) {
-        debugPrint("Error fetching libraries for PPN $ppnValue: $e");
-      }
-    }),
-  );
-
-  return results;
-}
-
-List<Map<String, String>> sortLibraries(List<Map<String, String>> libraries) {
-  libraries.sort(
-    (a, b) =>
-        a['location']!.toLowerCase().compareTo(b['location']!.toLowerCase()),
-  );
-  return libraries;
 }

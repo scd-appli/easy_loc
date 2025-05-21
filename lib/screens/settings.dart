@@ -177,9 +177,8 @@ class _SettingsState extends State<Settings> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.fmd_bad_outlined, size: 80),
                     Padding(
-                      padding: const EdgeInsets.only(right: 20),
+                      padding: const EdgeInsets.only(right: 10),
                       child: Column(
                         children: [
                           Text(l10n.appName, style: TextStyle(fontSize: 25)),

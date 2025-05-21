@@ -57,7 +57,7 @@ class IsbnInputForm extends StatelessWidget {
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9-X]')),
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9-Xx]')),
                       IsISBN(),
                     ],
                     onSubmitted: (_) => onSend(),
