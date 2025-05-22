@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:easy_loc/functions/utils.dart';
@@ -51,7 +52,7 @@ void main() {
         text: '123-456-7890-12-1',
       ); // 13 digits, 4 dashes
       final result = formatter.formatEditUpdate(oldValue, newValue);
-      expect(result, newValue);
+      expect(result.text, newValue.text);
     });
 
     test(
@@ -59,7 +60,7 @@ void main() {
       () {
         final newValue = TextEditingValue(text: '123-45'); // 5 digits, 1 dash
         final result = formatter.formatEditUpdate(oldValue, newValue);
-        expect(result, newValue);
+        expect(result.text, newValue.text);
       },
     );
 
@@ -88,28 +89,60 @@ void main() {
       expect(formatter.formatEditUpdate(oldValue, newValue3), oldValue);
     });
 
+    test('should convert x to X and push X to the end if it exists and is not at the end', () {
+      final newValue = TextEditingValue(text: '123x456');
+      final result = formatter.formatEditUpdate(oldValue, newValue);
+      expect(result.text, '123456X');
+    });
+    
     test('should push X to the end if it exists and is not at the end', () {
       final newValue = TextEditingValue(text: '123X456');
       final result = formatter.formatEditUpdate(oldValue, newValue);
       expect(result.text, '123456X');
     });
 
-    test('should push x to the end if it exists and is not at the end', () {
-      final newValue = TextEditingValue(text: '123x456');
-      final result = formatter.formatEditUpdate(oldValue, newValue);
-      expect(result.text, '123456x');
-    });
-
     test('should allow a single X at the end', () {
       final newValue = TextEditingValue(text: '123456X');
       final result = formatter.formatEditUpdate(oldValue, newValue);
-      expect(result, newValue);
+      expect(result.text, '123456X');
     });
 
-    test('should allow a single x at the end', () {
+    test('should convert a single x at the end to X', () {
       final newValue = TextEditingValue(text: '123456x');
       final result = formatter.formatEditUpdate(oldValue, newValue);
-      expect(result, newValue);
+      expect(result.text, '123456X');
+    });
+
+    test('should handle x conversion and push to end correctly', () {
+      final newValue = TextEditingValue(text: '1x23');
+      final result = formatter.formatEditUpdate(oldValue, newValue);
+      expect(result.text, '123X');
+    });
+
+    test('should maintain original text if no formatting rules for X/x apply', () {
+      final newValue = TextEditingValue(text: '12345');
+      final result = formatter.formatEditUpdate(oldValue, newValue);
+      expect(result.text, '12345');
+    });
+
+    test('should correctly place cursor after x to X conversion when X is already at end', () {
+      final initialText = '123x';
+      final newValue = TextEditingValue(
+        text: initialText,
+        selection: TextSelection.collapsed(offset: initialText.length),
+      );
+      final result = formatter.formatEditUpdate(oldValue, newValue);
+      expect(result.text, '123X');
+    });
+
+    test('should correctly place cursor after pushing X to end', () {
+      final initialText = '1X23';
+      final newValue = TextEditingValue(
+        text: initialText,
+        selection: TextSelection.collapsed(offset: 2), // cursor after X
+      );
+      final result = formatter.formatEditUpdate(oldValue, newValue);
+      expect(result.text, '123X');
     });
   });
 

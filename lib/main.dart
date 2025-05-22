@@ -50,16 +50,14 @@ class _EasyLocState extends State<EasyLoc> {
     _loadTheme();
     _loadLanguage();
   }
-
   void _loadTheme() async {
     setState(() {
-      _mode = Mode(DisplayMode.system, asyncPrefs);
+      _mode = Mode(ThemeMode.system, asyncPrefs);
     });
 
-    final DisplayMode savedMode = await _mode.getSync();
-    final ThemeMode newThemeMode = Mode.displayModeToThemeMode(savedMode);
+    final ThemeMode savedMode = await _mode.getSync();
 
-    if (_themeMode != newThemeMode) changeTheme(newThemeMode);
+    if (_themeMode != savedMode) changeTheme(savedMode);
   }
 
   void _loadLanguage() async {

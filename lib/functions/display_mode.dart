@@ -1,81 +1,57 @@
 import 'package:easy_loc/main.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-enum DisplayMode { system, light, dark }
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Re-added for localization
 
 class Mode {
   final String key = "mode";
-  DisplayMode _mode;
+  ThemeMode _mode;
   SharedPreferencesAsync sharred;
 
   Mode(this._mode, this.sharred);
 
-  void changeMode(BuildContext context, DisplayMode mode) async {
+  void changeMode(BuildContext context, ThemeMode mode) async {
     _mode = mode;
-    await sharred.setInt(key, displayModeToInt(mode));
-    if(context.mounted) EasyLoc.of(context).changeTheme(Mode.displayModeToThemeMode(mode));
+    await sharred.setInt(key, mode.index);
+    if(context.mounted) EasyLoc.of(context).changeTheme(mode);
   }
 
-  DisplayMode get() => _mode;
+  ThemeMode get() => _mode;
 
-  Future<DisplayMode> getSync() async {
+  Future<ThemeMode> getSync() async {
     int? n = await sharred.getInt(key);
 
-    if (n == null) {
-      _mode = DisplayMode.system;
+    if (n == null || n < 0 || n >= ThemeMode.values.length) {
+      _mode = ThemeMode.system;
+      // Optionally, save the default back to SharedPreferences if it was null or invalid
+      // await sharred.setInt(key, _mode.index); 
       return _mode;
     }
 
-    _mode = intToDisplayMode(n);
+    _mode = ThemeMode.values[n];
     return _mode;
   }
 
-  static String displayModeToString(BuildContext context, DisplayMode mode) {
+  static String themeModeToString(BuildContext context, ThemeMode mode) {
     final l10n = AppLocalizations.of(context)!;
     switch (mode) {
-      case DisplayMode.system:
+      case ThemeMode.system:
         return l10n.system;
-      case DisplayMode.light:
+      case ThemeMode.light:
         return l10n.light;
-      case DisplayMode.dark:
+      case ThemeMode.dark:
         return l10n.dark;
     }
   }
 
-  static DisplayMode intToDisplayMode(int n) {
-    switch (n) {
-      case 0:
-        return DisplayMode.system;
-      case 1:
-        return DisplayMode.light;
-      case 2:
-        return DisplayMode.dark;
-      default:
-        return DisplayMode.system;
-    }
+  static int themeModeToInt(ThemeMode mode) {
+    return mode.index;
   }
-
-  static int displayModeToInt(DisplayMode mode) {
-    switch (mode) {
-      case DisplayMode.system:
-        return 0;
-      case DisplayMode.light:
-        return 1;
-      case DisplayMode.dark:
-        return 2;
+  static ThemeMode intToThemeMode(int n) {
+    if (n < 0 || n >= ThemeMode.values.length) {
+      return ThemeMode.system; // Default to system if out of bounds
     }
+    return ThemeMode.values[n];
   }
-
-  static ThemeMode displayModeToThemeMode(DisplayMode mode) {
-    switch (mode) {
-      case DisplayMode.light:
-        return ThemeMode.light;
-      case DisplayMode.dark:
-        return ThemeMode.dark;
-      case DisplayMode.system:
-        return ThemeMode.system;
-    }
-  }
+  
 }

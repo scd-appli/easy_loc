@@ -1,6 +1,13 @@
 import 'package:flutter/services.dart';
 
 extension StringExtensions on String {
+  /// Counts the number of occurrences of a specific character [l] within the string.
+  ///
+  /// Example:
+  /// ```dart
+  /// 'hello'.numberOf('l'); // returns 2
+  /// 'banana'.numberOf('a'); // returns 3
+  /// ```
   int numberOf(String l) {
     int count = 0;
     for (var i in split('')) {
@@ -9,13 +16,29 @@ extension StringExtensions on String {
     return count;
   }
 
+  /// Moves the single occurrence of a character [l] to the end of the string.
+  ///
+  /// Throws a [FormatException] if the character [l] does not appear exactly
+  /// once in the string.
+  ///
+  /// Example:
+  /// ```dart
+  /// 'he.llo'.pushToTheEnd('.'); // returns 'hello.'
+  /// 'abc.def'.pushToTheEnd('.'); // returns 'abcdef.'
+  /// ```
+  ///
+  /// Throws [FormatException] if [l] is not found or found more than once:
+  /// ```dart
+  /// 'hello'.pushToTheEnd('.'); // throws FormatException
+  /// 'he.l.lo'.pushToTheEnd('.'); // throws FormatException
+  /// ```
   String pushToTheEnd(String l){
     if (numberOf(l) != 1){
       throw FormatException("The parameter must have exactly one occurence in the string");
     }
 
-    String newValue = replaceFirst(RegExp(l),"");
-    return newValue+l;
+    String newValue = replaceFirst(RegExp(l),"") + l;
+    return newValue;
   }
 }
 
@@ -25,7 +48,7 @@ class IsISBN extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final String value = newValue.text;
+    String value = newValue.text;
     final String numbers = value.replaceAll(RegExp(r'[^0-9]'), '');
 
     // Limit to 13 digits maximum (ISBN-13 length)
@@ -34,7 +57,7 @@ class IsISBN extends TextInputFormatter {
     }
 
     // cannot have more than 4 dashes
-    if (value.length - numbers.length > 4) {
+    if (value.numberOf("-") > 4) {
       return oldValue;
     }
     
@@ -43,18 +66,18 @@ class IsISBN extends TextInputFormatter {
       return oldValue;
     }
 
+    // Replace x by X
+    if (value.contains("x")){
+      value = value.replaceFirst("x", "X");
+    }
+
     // if X exist and not at the end, pushed to the end
     if (value.contains("X") && !value.endsWith("X")){
       return TextEditingValue(text: value.pushToTheEnd("X"));
     }
 
-    // if x exist and not at the end, pushed to the end
-    if (value.contains("x") && !value.endsWith("x")){
-      return TextEditingValue(text: value.pushToTheEnd("x"));
-    }
-
     // Resolve
-    return newValue;
+    return TextEditingValue(text: value);
   }
 }
 

@@ -24,11 +24,10 @@ class _SettingsState extends State<Settings> {
   late Mode _mode;
   late DisplayLanguage _lang;
   bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _mode = Mode(DisplayMode.system, asyncPrefs);
+    _mode = Mode(ThemeMode.system, asyncPrefs);
     _lang = DisplayLanguage(asyncPrefs);
     _load();
   }
@@ -58,8 +57,7 @@ class _SettingsState extends State<Settings> {
       debugPrint("Error loading settings data: $e\n$s");
     }
   }
-
-  void changeMode(DisplayMode value) {
+  void changeMode(ThemeMode value) {
     if (_mode.get() == value) return;
 
     _mode.changeMode(context, value);
@@ -117,16 +115,15 @@ class _SettingsState extends State<Settings> {
                 Row(
                   children: [
                     Text(l10n.displayMode, style: TextStyle(fontSize: 17)),
-                    Spacer(),
-                    CustomDropDownMenu(
+                    Spacer(),                    CustomDropDownMenu(
                       key: ValueKey(
                         'displayMode_${currentLocale.languageCode}',
                       ), // trigger the rebuild
                       dropdownMenuEntries:
-                          DisplayMode.values.map((element) {
-                            return DropdownMenuEntry<DisplayMode>(
+                          ThemeMode.values.map((element) {
+                            return DropdownMenuEntry<ThemeMode>(
                               value: element,
-                              label: Mode.displayModeToString(context, element),
+                              label: Mode.themeModeToString(context, element),
                             );
                           }).toList(),
                       onSelected: (value) {
