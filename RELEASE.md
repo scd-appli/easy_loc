@@ -3,3 +3,4 @@
 
 ## 🔥 Features
  - Added ISSN Support
+ - Added CSV export functionality

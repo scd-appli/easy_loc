@@ -10,14 +10,14 @@ import '../components/custom_app_bar.dart';
 import 'package:flutter/services.dart';
 import '../functions/utils.dart';
 
-class CameraScanScreen extends StatefulWidget {
-  const CameraScanScreen({super.key});
+class CameraScan extends StatefulWidget {
+  const CameraScan({super.key});
 
   @override
-  State<CameraScanScreen> createState() => _CameraScanScreenState();
+  State<CameraScan> createState() => _CameraScanState();
 }
 
-class _CameraScanScreenState extends State<CameraScanScreen> {
+class _CameraScanState extends State<CameraScan> {
   List<CameraDescription>? _cameras;
   CameraController? _controller;
   final BarcodeScanner _barcodeScanner = BarcodeScanner(

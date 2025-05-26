@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:easy_loc/screens/camera_scan_screen.dart';
+import 'package:easy_loc/screens/camera_scan.dart';
 import 'package:easy_loc/screens/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/home_screens.dart';
+import 'screens/home.dart';
 import 'screens/settings.dart';
 import 'functions/display_mode.dart';
 import 'functions/display_language.dart';
@@ -109,10 +109,10 @@ class _EasyLocState extends State<EasyLoc> {
       routes: {
         '/settings': (context) => Settings(),
         '/history': (context) => History(),
-        '/scan': (context) => CameraScanScreen(),
+        '/scan': (context) => CameraScan(),
       },
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const HomeScreen(),
+      home: const Home(),
     );
   }
 }

@@ -9,14 +9,14 @@ import '../functions/history_modele.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../functions/api.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<Home> createState() => _HomeState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeState extends State<Home> {
   final TextEditingController _isbnController = TextEditingController();
   final HistoryModele _history = HistoryModele();
 
