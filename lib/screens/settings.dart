@@ -47,7 +47,7 @@ class _SettingsState extends State<Settings> {
   }
 
   Future<void> _loadLang() async {
-    await _lang.loadSavedSetting();
+    await _lang.getSync();
   }
 
   Future<void> _loadInfo() async {
@@ -57,6 +57,7 @@ class _SettingsState extends State<Settings> {
       debugPrint("Error loading settings data: $e\n$s");
     }
   }
+
   void changeMode(ThemeMode value) {
     if (_mode.get() == value) return;
 
@@ -115,7 +116,8 @@ class _SettingsState extends State<Settings> {
                 Row(
                   children: [
                     Text(l10n.displayMode, style: TextStyle(fontSize: 17)),
-                    Spacer(),                    CustomDropDownMenu(
+                    Spacer(),
+                    CustomDropDownMenu(
                       key: ValueKey(
                         'displayMode_${currentLocale.languageCode}',
                       ), // trigger the rebuild
@@ -175,7 +177,7 @@ class _SettingsState extends State<Settings> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 10),
+                      padding: const EdgeInsets.only(right: 10, left: 15),
                       child: Column(
                         children: [
                           Text(l10n.appName, style: TextStyle(fontSize: 25)),
@@ -187,7 +189,11 @@ class _SettingsState extends State<Settings> {
                       icon: Icon(AntDesign.github_outline, size: 60),
                       onPressed:
                           () => launchUrl(
-                            Uri(scheme: "https", host: "www.github.com", path: "scd-appli/easy_loc"),
+                            Uri(
+                              scheme: "https",
+                              host: "www.github.com",
+                              path: "scd-appli/easy_loc",
+                            ),
                           ),
                     ),
                   ],

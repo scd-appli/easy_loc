@@ -26,9 +26,12 @@ void main() {
         expect('123x456'.pushToTheEnd('x'), '123456x');
       });
 
-      test('should throw FormatException if character appears more than once', () {
-        expect(() => 'abXcXde'.pushToTheEnd('X'), throwsFormatException);
-      });
+      test(
+        'should throw FormatException if character appears more than once',
+        () {
+          expect(() => 'abXcXde'.pushToTheEnd('X'), throwsFormatException);
+        },
+      );
 
       test('should throw FormatException if character does not appear', () {
         expect(() => 'abcde'.pushToTheEnd('X'), throwsFormatException);
@@ -37,7 +40,7 @@ void main() {
       test('should work with character already at the end', () {
         expect('abcdeX'.pushToTheEnd('X'), 'abcdeX');
       });
-       test('should handle empty string when char is not present', () {
+      test('should handle empty string when char is not present', () {
         expect(() => ''.pushToTheEnd('X'), throwsFormatException);
       });
     });
@@ -89,12 +92,15 @@ void main() {
       expect(formatter.formatEditUpdate(oldValue, newValue3), oldValue);
     });
 
-    test('should convert x to X and push X to the end if it exists and is not at the end', () {
-      final newValue = TextEditingValue(text: '123x456');
-      final result = formatter.formatEditUpdate(oldValue, newValue);
-      expect(result.text, '123456X');
-    });
-    
+    test(
+      'should convert x to X and push X to the end if it exists and is not at the end',
+      () {
+        final newValue = TextEditingValue(text: '123x456');
+        final result = formatter.formatEditUpdate(oldValue, newValue);
+        expect(result.text, '123456X');
+      },
+    );
+
     test('should push X to the end if it exists and is not at the end', () {
       final newValue = TextEditingValue(text: '123X456');
       final result = formatter.formatEditUpdate(oldValue, newValue);
@@ -119,21 +125,27 @@ void main() {
       expect(result.text, '123X');
     });
 
-    test('should maintain original text if no formatting rules for X/x apply', () {
-      final newValue = TextEditingValue(text: '12345');
-      final result = formatter.formatEditUpdate(oldValue, newValue);
-      expect(result.text, '12345');
-    });
+    test(
+      'should maintain original text if no formatting rules for X/x apply',
+      () {
+        final newValue = TextEditingValue(text: '12345');
+        final result = formatter.formatEditUpdate(oldValue, newValue);
+        expect(result.text, '12345');
+      },
+    );
 
-    test('should correctly place cursor after x to X conversion when X is already at end', () {
-      final initialText = '123x';
-      final newValue = TextEditingValue(
-        text: initialText,
-        selection: TextSelection.collapsed(offset: initialText.length),
-      );
-      final result = formatter.formatEditUpdate(oldValue, newValue);
-      expect(result.text, '123X');
-    });
+    test(
+      'should correctly place cursor after x to X conversion when X is already at end',
+      () {
+        final initialText = '123x';
+        final newValue = TextEditingValue(
+          text: initialText,
+          selection: TextSelection.collapsed(offset: initialText.length),
+        );
+        final result = formatter.formatEditUpdate(oldValue, newValue);
+        expect(result.text, '123X');
+      },
+    );
 
     test('should correctly place cursor after pushing X to end', () {
       final initialText = '1X23';
@@ -376,8 +388,10 @@ void main() {
       ];
       // sortLibraries is now from utils.dart (imported at the top of the file)
       final sortedLibraries = sortLibraries(libraries);
-      expect(sortedLibraries.map((lib) => lib['location']),
-          orderedEquals(['Library A', 'Library B', 'Library C']));
+      expect(
+        sortedLibraries.map((lib) => lib['location']),
+        orderedEquals(['Library A', 'Library B', 'Library C']),
+      );
     });
   });
 
@@ -387,45 +401,79 @@ void main() {
       expect(isValidFormat('9781234567890'), isTrue, reason: 'Valid ISBN-13');
       expect(isValidFormat('123456789X'), isTrue, reason: 'Valid ISBN-10');
       expect(isValidFormat('1234-5678'), isTrue, reason: 'Valid ISSN');
-      expect(isValidFormat('invalid-string'), isFalse, reason: 'Invalid format');
+      expect(
+        isValidFormat('invalid-string'),
+        isFalse,
+        reason: 'Invalid format',
+      );
       expect(isValidFormat(''), isFalse, reason: 'Empty string');
     });
 
     test('getFormat correctly identifies format type', () {
       // getFormat and Format enum are now from utils.dart
-      expect(getFormat('9781234567890'), Format.isbn, reason: 'ISBN-13 should return Format.isbn');
-      expect(getFormat('123456789X'), Format.isbn, reason: 'ISBN-10 should return Format.isbn');
-      expect(getFormat('1234-5678'), Format.issn, reason: 'ISSN should return Format.issn');
-      expect(getFormat('invalid-string'), isNull, reason: 'Invalid string should return null');
+      expect(
+        getFormat('9781234567890'),
+        Format.isbn,
+        reason: 'ISBN-13 should return Format.isbn',
+      );
+      expect(
+        getFormat('123456789X'),
+        Format.isbn,
+        reason: 'ISBN-10 should return Format.isbn',
+      );
+      expect(
+        getFormat('1234-5678'),
+        Format.issn,
+        reason: 'ISSN should return Format.issn',
+      );
+      expect(
+        getFormat('invalid-string'),
+        isNull,
+        reason: 'Invalid string should return null',
+      );
       expect(getFormat(''), isNull, reason: 'Empty string should return null');
     });
 
-    test('acceptedSearch contains correct validation functions from utils.dart', () {
+    test(
+      'acceptedSearch contains correct validation functions from utils.dart',
+      () {
+        expect(acceptedSearch[0][1]('9780306406157'), isTrue); // isISBN13
+        expect(
+          acceptedSearch[0][1]('123456789'),
+          isFalse,
+        ); // isISBN13 with invalid input
 
-      expect(acceptedSearch[0][1]('9780306406157'), isTrue); // isISBN13
-      expect(acceptedSearch[0][1]('123456789'), isFalse); // isISBN13 with invalid input
+        expect(acceptedSearch[1][1]('0306406152'), isTrue); // isISBN10
+        expect(
+          acceptedSearch[1][1]('12345678901'),
+          isFalse,
+        ); // isISBN10 with invalid input
 
-      expect(acceptedSearch[1][1]('0306406152'), isTrue); // isISBN10
-      expect(acceptedSearch[1][1]('12345678901'), isFalse); // isISBN10 with invalid input
+        expect(acceptedSearch[2][1]('1234-5678'), isTrue); // isISSN
+        expect(
+          acceptedSearch[2][1]('1234-567A'),
+          isFalse,
+        ); // isISSN with invalid input
+      },
+    );
 
-      expect(acceptedSearch[2][1]('1234-5678'), isTrue); // isISSN
-      expect(acceptedSearch[2][1]('1234-567A'), isFalse); // isISSN with invalid input
-    });
+    test(
+      'acceptedFormatFunction returns a list of correct validation functions',
+      () {
+        final functions = acceptedFormatFunction();
 
-    test('acceptedFormatFunction returns a list of correct validation functions', () {
-      final functions = acceptedFormatFunction();
+        // ISBN13
+        expect(functions[0]('9780306406157'), isTrue);
+        expect(functions[0]('12345'), isFalse);
 
-      // ISBN13
-      expect(functions[0]('9780306406157'), isTrue);
-      expect(functions[0]('12345'), isFalse);
+        // ISBN10
+        expect(functions[1]('0306406152'), isTrue);
+        expect(functions[1]('12345'), isFalse);
 
-      // ISBN10
-      expect(functions[1]('0306406152'), isTrue);
-      expect(functions[1]('12345'), isFalse);
-
-      // ISSN
-      expect(functions[2]('1234-5678'), isTrue);
-      expect(functions[2]('1234-567A'), isFalse);
-    });
+        // ISSN
+        expect(functions[2]('1234-5678'), isTrue);
+        expect(functions[2]('1234-567A'), isFalse);
+      },
+    );
   });
 }

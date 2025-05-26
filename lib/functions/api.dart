@@ -32,10 +32,7 @@ Future<List<Map<String, String>>?> isbn2ppn(
   http.Client? client,
 }) async {
   try {
-    final response = await getAPI(
-      isbn2ppnEndpoint + isbn,
-      client: client,
-    );
+    final response = await getAPI(isbn2ppnEndpoint + isbn, client: client);
 
     final result = response['sudoc']?['query']?['result'];
     if (result is List) {
@@ -57,10 +54,7 @@ Future<List<Map<String, String>>?> issn2ppn(
   http.Client? client,
 }) async {
   try {
-    final response = await getAPI(
-      issn2ppnEndpoint + issn,
-      client: client,
-    );
+    final response = await getAPI(issn2ppnEndpoint + issn, client: client);
 
     final result = response['sudoc']?['query']?['result'];
     if (result is List) {
@@ -105,22 +99,31 @@ Future<List<Map<String, dynamic>>> multiwhere(
             rawLibraries = [libraryData];
           }
 
-          libraries = rawLibraries.map((item) {
-            if (item is Map) {
-              final String shortname = item['shortname']?.toString() ?? '';
-              final String longitude = item['longitude']?.toString() ?? '';
-              final String latitude = item['latitude']?.toString() ?? '';
+          libraries =
+              rawLibraries
+                  .map((item) {
+                    if (item is Map) {
+                      final String shortname =
+                          item['shortname']?.toString() ?? '';
+                      final String longitude =
+                          item['longitude']?.toString() ?? '';
+                      final String latitude =
+                          item['latitude']?.toString() ?? '';
 
-              if (shortname.isNotEmpty && longitude.isNotEmpty && latitude.isNotEmpty) {
-                return {
-                  'location': shortname,
-                  'longitude': longitude,
-                  'latitude': latitude,
-                };
-              }
-            }
-            return null; // Return null for invalid or incomplete items
-          }).whereType<Map<String, String>>().toList(); // Filter out nulls and ensure correct type
+                      if (shortname.isNotEmpty &&
+                          longitude.isNotEmpty &&
+                          latitude.isNotEmpty) {
+                        return {
+                          'location': shortname,
+                          'longitude': longitude,
+                          'latitude': latitude,
+                        };
+                      }
+                    }
+                    return null; // Return null for invalid or incomplete items
+                  })
+                  .whereType<Map<String, String>>()
+                  .toList(); // Filter out nulls and ensure correct type
         }
         results.add({'ppn': ppnValue, 'libraries': libraries});
       } catch (e) {

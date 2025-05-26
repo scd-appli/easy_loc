@@ -90,7 +90,7 @@ base class MockSharedPreferencesAsyncPlatform
     GetPreferencesParameters parameters, [
     SharedPreferencesOptions? options,
   ]) async => _store.keys.toSet();
-  
+
   @override
   Future<Map<String, Object>> getPreferences(
     GetPreferencesParameters parameters, [

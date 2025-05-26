@@ -27,7 +27,7 @@ class EasyLoc extends StatefulWidget {
   @override
   State<EasyLoc> createState() => _EasyLocState();
 
-  // ignore: library_private_types_in_public_api
+  // ignore: library_private_types_in_public_apiw, library_private_types_in_public_api
   static _EasyLocState of(BuildContext context) =>
       context.findAncestorStateOfType<_EasyLocState>()!;
 }
@@ -50,6 +50,7 @@ class _EasyLocState extends State<EasyLoc> {
     _loadTheme();
     _loadLanguage();
   }
+
   void _loadTheme() async {
     setState(() {
       _mode = Mode(ThemeMode.system, asyncPrefs);
@@ -62,7 +63,7 @@ class _EasyLocState extends State<EasyLoc> {
 
   void _loadLanguage() async {
     final languageManager = DisplayLanguage(asyncPrefs);
-    final newLocale = await languageManager.loadSavedSetting();
+    final newLocale = await languageManager.getSync();
     final newSetting = languageManager.getCurrentSetting();
 
     if (newSetting != _languageSetting || newLocale != _locale) {
@@ -108,7 +109,7 @@ class _EasyLocState extends State<EasyLoc> {
       routes: {
         '/settings': (context) => Settings(),
         '/history': (context) => History(),
-        '/scan': (context) => CameraScanScreen()
+        '/scan': (context) => CameraScanScreen(),
       },
       supportedLocales: AppLocalizations.supportedLocales,
       home: const HomeScreen(),

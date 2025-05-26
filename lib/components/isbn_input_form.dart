@@ -8,7 +8,7 @@ class IsbnInputForm extends StatelessWidget {
   final bool isValid;
   final String? noDataMessage;
   final ValueChanged<String> onChanged;
-  final VoidCallback onSend;
+  final Function({bool? fromHistory}) onSend;
   final double? padding;
 
   const IsbnInputForm({
@@ -24,7 +24,7 @@ class IsbnInputForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // Use ValueListenableBuilder to rebuild suffixIcon when controller text changes
+    // ValueListenableBuilder to rebuild suffixIcon when controller text changes
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, child) {
@@ -45,12 +45,11 @@ class IsbnInputForm extends StatelessWidget {
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       labelText: "ISBN",
-                      errorText:
-                          isValid ? null : l10n.invalidInput,
+                      errorText: isValid ? null : l10n.invalidInput,
                       suffixIcon:
                           value.text.isNotEmpty
                               ? IconButton(
-                                onPressed: onSend,
+                                onPressed: () => onSend(fromHistory: false),
                                 icon: const Icon(Icons.send),
                               )
                               : null,
@@ -60,7 +59,7 @@ class IsbnInputForm extends StatelessWidget {
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9-Xx]')),
                       IsISBN(),
                     ],
-                    onSubmitted: (_) => onSend(),
+                    onSubmitted: (_) => onSend(fromHistory: false),
                   ),
                   if (noDataMessage != null)
                     Padding(

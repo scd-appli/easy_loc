@@ -13,7 +13,7 @@ class Mode {
   void changeMode(BuildContext context, ThemeMode mode) async {
     _mode = mode;
     await sharred.setInt(key, mode.index);
-    if(context.mounted) EasyLoc.of(context).changeTheme(mode);
+    if (context.mounted) EasyLoc.of(context).changeTheme(mode);
   }
 
   ThemeMode get() => _mode;
@@ -24,7 +24,7 @@ class Mode {
     if (n == null || n < 0 || n >= ThemeMode.values.length) {
       _mode = ThemeMode.system;
       // Optionally, save the default back to SharedPreferences if it was null or invalid
-      // await sharred.setInt(key, _mode.index); 
+      // await sharred.setInt(key, _mode.index);
       return _mode;
     }
 
@@ -47,11 +47,11 @@ class Mode {
   static int themeModeToInt(ThemeMode mode) {
     return mode.index;
   }
+
   static ThemeMode intToThemeMode(int n) {
     if (n < 0 || n >= ThemeMode.values.length) {
       return ThemeMode.system; // Default to system if out of bounds
     }
     return ThemeMode.values[n];
   }
-  
 }

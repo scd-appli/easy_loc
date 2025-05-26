@@ -5,7 +5,6 @@ import 'package:http/testing.dart';
 
 import 'package:easy_loc/functions/api.dart';
 
-
 void main() {
   group('API Utility Functions from api.dart', () {
     late MockClient mockClient;
@@ -127,10 +126,7 @@ void main() {
         'returns empty list if API response indicates no PPN found (empty result list)',
         () async {
           mockClient = MockClient((request) async {
-            expect(
-              request.url.toString(),
-              '${isbn2ppnEndpoint}isbn-no-result',
-            );
+            expect(request.url.toString(), '${isbn2ppnEndpoint}isbn-no-result');
             return http.Response(
               jsonEncode({
                 'sudoc': {
@@ -167,10 +163,7 @@ void main() {
 
       test('returns null on API error (getAPI throws)', () async {
         mockClient = MockClient((request) async {
-          expect(
-            request.url.toString(),
-            '${isbn2ppnEndpoint}isbn-api-error',
-          );
+          expect(request.url.toString(), '${isbn2ppnEndpoint}isbn-api-error');
           return http.Response('Server Error', 500);
         });
         final result = await isbn2ppn('isbn-api-error', client: mockClient);
@@ -240,10 +233,7 @@ void main() {
 
       test('returns null on API error', () async {
         mockClient = MockClient((request) async {
-          expect(
-            request.url.toString(),
-            '${issn2ppnEndpoint}issn-api-error',
-          );
+          expect(request.url.toString(), '${issn2ppnEndpoint}issn-api-error');
           return http.Response('Server Error', 500);
         });
         final result = await issn2ppn('issn-api-error', client: mockClient);
@@ -254,8 +244,7 @@ void main() {
     group('multiwhere', () {
       test('fetches and processes libraries for multiple PPNs', () async {
         mockClient = MockClient((request) async {
-          if (request.url.toString() ==
-              '${multiwhereEndpoint}ppn1') {
+          if (request.url.toString() == '${multiwhereEndpoint}ppn1') {
             return http.Response(
               jsonEncode({
                 'sudoc': {
@@ -279,8 +268,7 @@ void main() {
               }),
               200,
             );
-          } else if (request.url.toString() ==
-              '${multiwhereEndpoint}ppn2') {
+          } else if (request.url.toString() == '${multiwhereEndpoint}ppn2') {
             return http.Response(
               jsonEncode({
                 'sudoc': {
@@ -297,8 +285,7 @@ void main() {
               }),
               200,
             );
-          } else if (request.url.toString() ==
-              '${multiwhereEndpoint}ppn3') {
+          } else if (request.url.toString() == '${multiwhereEndpoint}ppn3') {
             return http.Response(
               jsonEncode({
                 'sudoc': {
@@ -307,8 +294,7 @@ void main() {
               }),
               200,
             );
-          } else if (request.url.toString() ==
-              '${multiwhereEndpoint}ppn4') {
+          } else if (request.url.toString() == '${multiwhereEndpoint}ppn4') {
             return http.Response('Error for PPN4', 500);
           }
           return http.Response('Not Found for ${request.url}', 404);
@@ -404,8 +390,7 @@ void main() {
 
       test('handles API error for one PPN among many', () async {
         mockClient = MockClient((request) async {
-          if (request.url.toString() ==
-              '${multiwhereEndpoint}ppn-good1') {
+          if (request.url.toString() == '${multiwhereEndpoint}ppn-good1') {
             return http.Response(
               jsonEncode({
                 'sudoc': {
@@ -424,8 +409,7 @@ void main() {
               }),
               200,
             );
-          } else if (request.url.toString() ==
-              '${multiwhereEndpoint}ppn-bad') {
+          } else if (request.url.toString() == '${multiwhereEndpoint}ppn-bad') {
             return http.Response('Simulated Error', 500);
           } else if (request.url.toString() ==
               '${multiwhereEndpoint}ppn-good2') {
@@ -479,15 +463,12 @@ void main() {
 
       test('handles empty library list from API', () async {
         mockClient = MockClient((request) async {
-          if (request.url.toString() ==
-              '${multiwhereEndpoint}ppn-empty-libs') {
+          if (request.url.toString() == '${multiwhereEndpoint}ppn-empty-libs') {
             return http.Response(
               jsonEncode({
                 'sudoc': {
                   'query': {
-                    'result': {
-                      'library': [],
-                    },
+                    'result': {'library': []},
                   },
                 },
               }),
@@ -520,9 +501,7 @@ void main() {
               jsonEncode({
                 'sudoc': {
                   'query': {
-                    'result': {
-                      'library': "string instead of list or map",
-                    },
+                    'result': {'library': "string instead of list or map"},
                   },
                 },
               }),
@@ -557,13 +536,8 @@ void main() {
                   'query': {
                     'result': {
                       'library': [
-                        {
-                          'shortname': 'Lib A',
-                        },
-                        {
-                          'longitude': '3.0',
-                          'latitude': '4.0',
-                        },
+                        {'shortname': 'Lib A'},
+                        {'longitude': '3.0', 'latitude': '4.0'},
                       ],
                     },
                   },

@@ -32,13 +32,14 @@ extension StringExtensions on String {
   /// 'hello'.pushToTheEnd('.'); // throws FormatException
   /// 'he.l.lo'.pushToTheEnd('.'); // throws FormatException
   /// ```
-  String pushToTheEnd(String l){
-    if (numberOf(l) != 1){
-      throw FormatException("The parameter must have exactly one occurence in the string");
+  String pushToTheEnd(String l) {
+    if (numberOf(l) != 1) {
+      throw FormatException(
+        "The parameter must have exactly one occurence in the string",
+      );
     }
 
-    String newValue = replaceFirst(RegExp(l),"") + l;
-    return newValue;
+    return replaceFirst(RegExp(l), "") + l;
   }
 }
 
@@ -60,19 +61,19 @@ class IsISBN extends TextInputFormatter {
     if (value.numberOf("-") > 4) {
       return oldValue;
     }
-    
+
     // Only one X or x
     if (value.numberOf("X") + value.numberOf("x") > 1) {
       return oldValue;
     }
 
     // Replace x by X
-    if (value.contains("x")){
+    if (value.contains("x")) {
       value = value.replaceFirst("x", "X");
     }
 
     // if X exist and not at the end, pushed to the end
-    if (value.contains("X") && !value.endsWith("X")){
+    if (value.contains("X") && !value.endsWith("X")) {
       return TextEditingValue(text: value.pushToTheEnd("X"));
     }
 
@@ -198,14 +199,6 @@ final RegExp searchISSN = RegExp(
   issnRegex.pattern.substring(1, issnRegex.pattern.length - 1),
 );
 
-List<Map<String, String>> sortLibraries(List<Map<String, String>> libraries) {
-  libraries.sort(
-    (a, b) =>
-        a['location']!.toLowerCase().compareTo(b['location']!.toLowerCase()),
-  );
-  return libraries;
-}
-
 enum Format { isbn, issn }
 
 List<bool Function(String)> acceptedFormatFunction() {
@@ -237,4 +230,12 @@ Format? getFormat(String value) {
   if (isISBN10(value) || isISBN13(value)) return Format.isbn;
   if (isISSN(value)) return Format.issn;
   return null;
+}
+
+List<Map<String, String>> sortLibraries(List<Map<String, String>> libraries) {
+  libraries.sort(
+    (a, b) =>
+        a['location']!.toLowerCase().compareTo(b['location']!.toLowerCase()),
+  );
+  return libraries;
 }
