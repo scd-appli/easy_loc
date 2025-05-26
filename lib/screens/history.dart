@@ -122,7 +122,7 @@ class _HistoryState extends State<History> {
                     onPressed: () async {
                       await _history.toDownload(context, isbn: element.value);
                     },
-                    icon: Icon(Icons.save, color: Colors.black54),
+                    icon: Icon(Icons.save),
                   ),
                   IconButton(
                     onPressed: () async {
