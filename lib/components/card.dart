@@ -25,7 +25,7 @@ class CustomCard extends StatelessWidget {
   final String title;
   final String? longitude;
   final String? latitude;
-  final Widget? actions;
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +54,7 @@ class CustomCard extends StatelessWidget {
                     icon: const Icon(Icons.location_on_outlined, size: 30),
                   )
                 else if (actions != null)
-                  actions!,
+                  ...actions!,
               ],
             ),
           ),

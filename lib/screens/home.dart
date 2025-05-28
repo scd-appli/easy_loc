@@ -7,15 +7,16 @@ import '../components/isbn_input_form.dart';
 import '../components/scan_button.dart';
 import '../functions/history_modele.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../functions/api.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<Home> createState() => _HomeState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeState extends State<Home> {
   final TextEditingController _isbnController = TextEditingController();
   final HistoryModele _history = HistoryModele();
 
@@ -24,21 +25,20 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _validInput = true;
   int _count = 0;
 
-  Future<void> _fetchData(String isbn, Format format) async {
-
+  Future<void> _fetchData(String isbn, Format format, bool? fromHistory) async {
     setState(() {
       _noData = null;
     });
 
     late List<Map<String, String>>? ppnList;
 
-    switch(format){
+    switch (format) {
       case Format.isbn:
-            ppnList = await isbn2ppn(isbn);
-            break;
+        ppnList = await isbn2ppn(isbn);
+        break;
       case Format.issn:
-            ppnList = await issn2ppn(isbn);
-            break;
+        ppnList = await issn2ppn(isbn);
+        break;
     }
 
     if (ppnList == null || ppnList.isEmpty) {
@@ -46,6 +46,13 @@ class _HomeScreenState extends State<HomeScreen> {
         _noData = isbn;
       });
       return;
+    }
+
+    List<String> ppnValue =
+        ppnList.map((ppn) => ppn['ppn']).cast<String>().toList();
+
+    if (fromHistory != null && !fromHistory) {
+      _history.add(isbn, ppnValue);
     }
 
     List<Map<String, dynamic>> response = await multiwhere(ppnList);
@@ -73,13 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> send({bool? fromHistory}) async {
     String value = _isbnController.text;
+    setState(() {
+      _data = null;
+    });
 
     if (isValidFormat(value)) {
       setState(() {
-        _fetchData(value,getFormat(value)!);
+        _fetchData(value, getFormat(value)!, fromHistory);
         _validInput = true;
-        if (fromHistory != null && fromHistory) return;
-        _history.add(value);
       });
     } else {
       setState(() {
@@ -117,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _isbnController.text = isbn;
             await send(fromHistory: true);
           }
-          if(mounted) FocusScope.of(context).unfocus();
+          if (mounted) FocusScope.of(context).unfocus();
         },
       ),
     );
@@ -201,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _noData != null
                         ? "${l10n.noPPNAssociated}: $_noData"
                         : null,
-                onSend: send,
+                onSend: ({bool? fromHistory}) => send(fromHistory: fromHistory),
                 padding: 17,
               ),
               Padding(

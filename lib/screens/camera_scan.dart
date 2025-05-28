@@ -10,14 +10,14 @@ import '../components/custom_app_bar.dart';
 import 'package:flutter/services.dart';
 import '../functions/utils.dart';
 
-class CameraScanScreen extends StatefulWidget {
-  const CameraScanScreen({super.key});
+class CameraScan extends StatefulWidget {
+  const CameraScan({super.key});
 
   @override
-  State<CameraScanScreen> createState() => _CameraScanScreenState();
+  State<CameraScan> createState() => _CameraScanState();
 }
 
-class _CameraScanScreenState extends State<CameraScanScreen> {
+class _CameraScanState extends State<CameraScan> {
   List<CameraDescription>? _cameras;
   CameraController? _controller;
   final BarcodeScanner _barcodeScanner = BarcodeScanner(
@@ -59,7 +59,7 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
           }
 
           if (value != null) {
-            await _stopImageStream(); // Add this before popping for text
+            await _stopImageStream();
             if (mounted) {
               Navigator.pop(context, value);
             }
@@ -81,7 +81,7 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
 
     try {
       _cameras = await availableCameras();
-      if (!mounted) return; // Check mounted after await
+      if (!mounted) return;
 
       if (_cameras == null || _cameras!.isEmpty) {
         throw CameraException('NoCameraAvailable', 'No cameras available.');
@@ -189,7 +189,6 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
       debugPrint('****** Error processing image with ML Kit: $e');
       debugPrint('****** Stack Trace: $stackTrace');
     } finally {
-      // This executes if no early 'return' (due to a pop) occurred, or if an error happened.
       if (mounted) {
         _isProcessing = false;
         _resetProcessingDelay();

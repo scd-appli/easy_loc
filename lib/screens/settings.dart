@@ -24,11 +24,10 @@ class _SettingsState extends State<Settings> {
   late Mode _mode;
   late DisplayLanguage _lang;
   bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _mode = Mode(DisplayMode.system, asyncPrefs);
+    _mode = Mode(ThemeMode.system, asyncPrefs);
     _lang = DisplayLanguage(asyncPrefs);
     _load();
   }
@@ -48,7 +47,7 @@ class _SettingsState extends State<Settings> {
   }
 
   Future<void> _loadLang() async {
-    await _lang.loadSavedSetting();
+    await _lang.getSync();
   }
 
   Future<void> _loadInfo() async {
@@ -59,7 +58,7 @@ class _SettingsState extends State<Settings> {
     }
   }
 
-  void changeMode(DisplayMode value) {
+  void changeMode(ThemeMode value) {
     if (_mode.get() == value) return;
 
     _mode.changeMode(context, value);
@@ -123,10 +122,10 @@ class _SettingsState extends State<Settings> {
                         'displayMode_${currentLocale.languageCode}',
                       ), // trigger the rebuild
                       dropdownMenuEntries:
-                          DisplayMode.values.map((element) {
-                            return DropdownMenuEntry<DisplayMode>(
+                          ThemeMode.values.map((element) {
+                            return DropdownMenuEntry<ThemeMode>(
                               value: element,
-                              label: Mode.displayModeToString(context, element),
+                              label: Mode.themeModeToString(context, element),
                             );
                           }).toList(),
                       onSelected: (value) {
@@ -177,9 +176,8 @@ class _SettingsState extends State<Settings> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.fmd_bad_outlined, size: 80),
                     Padding(
-                      padding: const EdgeInsets.only(right: 20),
+                      padding: const EdgeInsets.only(right: 10, left: 15),
                       child: Column(
                         children: [
                           Text(l10n.appName, style: TextStyle(fontSize: 25)),
@@ -191,7 +189,11 @@ class _SettingsState extends State<Settings> {
                       icon: Icon(AntDesign.github_outline, size: 60),
                       onPressed:
                           () => launchUrl(
-                            Uri(scheme: "https", host: "www.github.com", path: "scd-appli/easy_loc"),
+                            Uri(
+                              scheme: "https",
+                              host: "www.github.com",
+                              path: "scd-appli/easy_loc",
+                            ),
                           ),
                     ),
                   ],
