@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:easy_loc/components/snack_bar.dart';
-import 'package:external_path/external_path.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
@@ -26,28 +28,23 @@ class HistoryModele {
     return file;
   }
 
-  Future<File> _getGeneralFilePath({String? isbn}) async {
-    final String dlFolderPath =
-        await ExternalPath.getExternalStoragePublicDirectory(
-          ExternalPath.DIRECTORY_DOWNLOAD,
-        );
+  Future<String?> _saveUserFileLocation({
+    String? defaultFileName,
+    required Uint8List bytes,
+  }) async {
+    String? outputFile = await FilePicker.platform.saveFile(
+      dialogTitle: "Choose a location",
+      fileName: defaultFileName,
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+      bytes: bytes,
+    );
 
-    debugPrint('Public Downloads Path: $dlFolderPath');
-
-    String baseFileName = 'historyEasyLoc${isbn ?? ""}';
-    String extension = '.csv';
-    String fileName = baseFileName + extension;
-    File dlFile = File('$dlFolderPath/$fileName');
-    int counter = 1;
-
-    // Check if file exists and find a unique name
-    while (await dlFile.exists()) {
-      fileName = '$baseFileName($counter)$extension';
-      dlFile = File('$dlFolderPath/$fileName');
-      counter++;
+    if (outputFile == null) {
+      return null;
     }
 
-    return dlFile;
+    return outputFile;
   }
 
   Future<Directory> _getDirectory() async {
@@ -233,17 +230,27 @@ class HistoryModele {
     if (permissionGranted) {
       debugPrint("Storage permission IS GRANTED for the operation.");
       try {
-        File dlFile = await _getGeneralFilePath(isbn: isbn);
-
         final File historyFile = await _getFile(isbn: isbn);
+        final csvString = await historyFile.readAsString();
 
-        if (await historyFile.exists()) {
-          final csvString = await historyFile.readAsString();
-          await dlFile.writeAsString(csvString);
-          debugPrint('File saved to: ${dlFile.path}');
-          if (context.mounted) showSnackBar(context, Text(l10n.fileSaved));
-        } else {
+        if (!await historyFile.exists()) {
           debugPrint('History file does not exist, nothing to download.');
+          return;
+        }
+
+        final bytes = utf8.encode(csvString);
+
+        String? dlFilePath = await _saveUserFileLocation(
+          defaultFileName: "EasyLocHistory${isbn ?? ""}.csv",
+          bytes: Uint8List.fromList(bytes),
+        );
+
+        if (context.mounted) {
+          if (dlFilePath == null) {
+            showSnackBar(context, Text(l10n.saveCancelledUser));
+            return;
+          }
+          showSnackBar(context, Text(l10n.fileSaved));
         }
       } catch (e) {
         debugPrint('Error saving to public downloads: $e');

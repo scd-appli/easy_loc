@@ -29,6 +29,7 @@
     "deleteConfirmation":"C'est une action irreversible",
     "delete":"Supprimer",
     "cancel":"Annuler",
-    "fileSaved":"Fichier enregistrer dans le dossier téléchargement.",
-    "permissionDenied":"Permissions refusées."
+    "fileSaved":"Fichier enregistré.",
+    "permissionDenied":"Permissions refusées.",
+    "saveCancelledUser":"Enregistrement annulé par l'utilisateur."
 }

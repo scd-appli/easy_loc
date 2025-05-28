@@ -29,6 +29,7 @@
     "deleteConfirmation":"It's an action irreversible",
     "delete":"Delete",
     "cancel":"Cancel",
-    "fileSaved":"File saved in the download folder.",
-    "permissionDenied":"Permission denied."
+    "fileSaved":"File saved.",
+    "permissionDenied":"Permission denied.",
+    "saveCancelledUser":"Saving Cancelled by the user."
 }
