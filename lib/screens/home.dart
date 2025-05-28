@@ -80,6 +80,9 @@ class _HomeState extends State<Home> {
 
   Future<void> send({bool? fromHistory}) async {
     String value = _isbnController.text;
+    setState((){
+      _data = null;
+    });
 
     if (isValidFormat(value)) {
       setState(() {

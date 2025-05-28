@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../screens/camera_scan.dart';
 
 class ScanButton extends StatelessWidget {
-  final VoidCallback onSend; // Keep onSend if needed after scan
+  final Function({bool? fromHistory}) onSend;
   final TextEditingController isbnController;
 
   const ScanButton({
@@ -22,7 +22,7 @@ class ScanButton extends StatelessWidget {
 
         if (barcodeResult != null && barcodeResult.isNotEmpty) {
           isbnController.text = barcodeResult;
-          onSend();
+          onSend(fromHistory: false);
         }
       },
       style: ButtonStyle(
