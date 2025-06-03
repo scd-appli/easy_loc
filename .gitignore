@@ -59,3 +59,6 @@ windows/
 !ios/Podfile
 !android/app/build.gradle.kts
 !android/app/proguard-rules.pro
+
+# Custom
+EasyLocLogo.png
