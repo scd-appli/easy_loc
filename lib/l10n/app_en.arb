@@ -28,5 +28,8 @@
     "deleteHistory":"Delete the history",
     "deleteConfirmation":"It's an action irreversible",
     "delete":"Delete",
-    "cancel":"Cancel"
+    "cancel":"Cancel",
+    "fileSaved":"File saved.",
+    "permissionDenied":"Permission denied.",
+    "saveCancelledUser":"Saving Cancelled by the user."
 }

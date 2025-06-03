@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+coverage/
 
 # Symbolication related
 app.*.symbols
@@ -58,3 +59,6 @@ windows/
 !ios/Podfile
 !android/app/build.gradle.kts
 !android/app/proguard-rules.pro
+
+# Custom
+EasyLocLogo.png

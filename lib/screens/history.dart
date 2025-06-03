@@ -30,8 +30,18 @@ class _HistoryState extends State<History> {
   }
 
   Future<void> _sync() async {
-    list = await _history.get();
-    list ??= [];
+    Map<String, List<String>>? mapList = await _history.get(
+      format: HistoryFormat.history,
+    );
+
+    if (mapList == null || mapList['isbn'] == null) {
+      list = [];
+      setState(() {});
+      return;
+    }
+
+    list = mapList['isbn'];
+
     setState(() {});
   }
 
@@ -58,6 +68,12 @@ class _HistoryState extends State<History> {
         title: l10n.historyTitle,
         actions: [
           IconButton(
+            onPressed: () async {
+              await _history.toDownload(context);
+            },
+            icon: Icon(Icons.save),
+          ),
+          IconButton(
             onPressed: () {
               showDialog(
                 context: context,
@@ -68,7 +84,12 @@ class _HistoryState extends State<History> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text(l10n.cancel, style: TextStyle(color: Theme.of(context).primaryColor),),
+                          child: Text(
+                            l10n.cancel,
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
                         ),
                         TextButton(
                           onPressed: () async {
@@ -76,7 +97,10 @@ class _HistoryState extends State<History> {
                             await _sync();
                             if (context.mounted) Navigator.pop(context);
                           },
-                          child: Text(l10n.delete, style: TextStyle(color: Colors.red[500]),),
+                          child: Text(
+                            l10n.delete,
+                            style: TextStyle(color: Colors.red[500]),
+                          ),
                         ),
                       ],
                     ),
@@ -89,25 +113,30 @@ class _HistoryState extends State<History> {
       body: ListView(
         padding: const EdgeInsets.all(8),
         children:
-            list!
-                .asMap()
-                .entries
-                .map((element) {
-                  return CustomCard(
-                    title: element.value,
-                    onTap: () => Navigator.pop(context, element.value),
-                    actions: IconButton(
-                      onPressed: () async {
-                        await _history.delete(element.key);
-                        await _sync();
-                      },
-                      icon: Icon(Icons.delete, color: Colors.red[300]),
-                    ),
-                  );
-                })
-                .toList()
-                .reversed
-                .toList(),
+            list!.asMap().entries.map((element) {
+              return CustomCard(
+                title: element.value,
+                onTap: () => Navigator.pop(context, element.value),
+                actions: [
+                  IconButton(
+                    onPressed: () async {
+                      await _history.toDownload(context, isbn: element.value);
+                    },
+                    icon: Icon(Icons.save),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      await _history.delete(
+                        index: element.key,
+                        isbn: element.value,
+                      );
+                      await _sync();
+                    },
+                    icon: Icon(Icons.delete, color: Colors.red[300]),
+                  ),
+                ],
+              );
+            }).toList(),
       ),
     );
   }

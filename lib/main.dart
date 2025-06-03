@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:easy_loc/screens/camera_scan_screen.dart';
+import 'package:easy_loc/screens/camera_scan.dart';
 import 'package:easy_loc/screens/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/home_screens.dart';
+import 'screens/home.dart';
 import 'screens/settings.dart';
 import 'functions/display_mode.dart';
 import 'functions/display_language.dart';
@@ -27,7 +27,7 @@ class EasyLoc extends StatefulWidget {
   @override
   State<EasyLoc> createState() => _EasyLocState();
 
-  // ignore: library_private_types_in_public_api
+  // ignore: library_private_types_in_public_apiw, library_private_types_in_public_api
   static _EasyLocState of(BuildContext context) =>
       context.findAncestorStateOfType<_EasyLocState>()!;
 }
@@ -53,18 +53,17 @@ class _EasyLocState extends State<EasyLoc> {
 
   void _loadTheme() async {
     setState(() {
-      _mode = Mode(DisplayMode.system, asyncPrefs);
+      _mode = Mode(ThemeMode.system, asyncPrefs);
     });
 
-    final DisplayMode savedMode = await _mode.getSync();
-    final ThemeMode newThemeMode = Mode.displayModeToThemeMode(savedMode);
+    final ThemeMode savedMode = await _mode.getSync();
 
-    if (_themeMode != newThemeMode) changeTheme(newThemeMode);
+    if (_themeMode != savedMode) changeTheme(savedMode);
   }
 
   void _loadLanguage() async {
     final languageManager = DisplayLanguage(asyncPrefs);
-    final newLocale = await languageManager.loadSavedSetting();
+    final newLocale = await languageManager.getSync();
     final newSetting = languageManager.getCurrentSetting();
 
     if (newSetting != _languageSetting || newLocale != _locale) {
@@ -110,10 +109,10 @@ class _EasyLocState extends State<EasyLoc> {
       routes: {
         '/settings': (context) => Settings(),
         '/history': (context) => History(),
-        '/scan': (context) => CameraScanScreen()
+        '/scan': (context) => CameraScan(),
       },
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const HomeScreen(),
+      home: const Home(),
     );
   }
 }

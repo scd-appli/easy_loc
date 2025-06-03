@@ -10,14 +10,14 @@ import '../components/custom_app_bar.dart';
 import 'package:flutter/services.dart';
 import '../functions/utils.dart';
 
-class CameraScanScreen extends StatefulWidget {
-  const CameraScanScreen({super.key});
+class CameraScan extends StatefulWidget {
+  const CameraScan({super.key});
 
   @override
-  State<CameraScanScreen> createState() => _CameraScanScreenState();
+  State<CameraScan> createState() => _CameraScanState();
 }
 
-class _CameraScanScreenState extends State<CameraScanScreen> {
+class _CameraScanState extends State<CameraScan> {
   List<CameraDescription>? _cameras;
   CameraController? _controller;
   final BarcodeScanner _barcodeScanner = BarcodeScanner(
@@ -43,6 +43,33 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
     _initializeCamera();
   }
 
+  Future<void> search(RecognizedText recognizedText) async {
+    for (TextBlock block in recognizedText.blocks) {
+      for (TextLine line in block.lines) {
+        String currentLineText = line.text;
+        String? value;
+
+        for (List format in acceptedSearch) {
+          RegExpMatch? match = format[0].firstMatch(currentLineText);
+          if (match != null) {
+            String potential = match.group(0)!;
+            if (format[1](potential)) {
+              value = potential;
+            }
+          }
+
+          if (value != null) {
+            await _stopImageStream();
+            if (mounted) {
+              Navigator.pop(context, value);
+            }
+            return;
+          }
+        }
+      }
+    }
+  }
+
   Future<void> _initializeCamera() async {
     // Reset error state on retry
     if (mounted) {
@@ -54,7 +81,7 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
 
     try {
       _cameras = await availableCameras();
-      if (!mounted) return; // Check mounted after await
+      if (!mounted) return;
 
       if (_cameras == null || _cameras!.isEmpty) {
         throw CameraException('NoCameraAvailable', 'No cameras available.');
@@ -156,51 +183,12 @@ class _CameraScanScreenState extends State<CameraScanScreen> {
       );
 
       if (mounted) {
-        final RegExp search13 = RegExp(
-          isbn13Regex.pattern.substring(1, isbn13Regex.pattern.length - 1),
-        );
-        final RegExp search10 = RegExp(
-          isbn10Regex.pattern.substring(1, isbn10Regex.pattern.length - 1),
-        );
-
-        for (TextBlock block in recognizedText.blocks) {
-          for (TextLine line in block.lines) {
-            String currentLineText = line.text;
-            String? isbnValue;
-
-            RegExpMatch? match13 = search13.firstMatch(currentLineText);
-            if (match13 != null) {
-              String potentialIsbn = match13.group(0)!;
-              if (isISBN13(potentialIsbn)) {
-                isbnValue = potentialIsbn;
-              }
-            }
-
-            if (isbnValue == null) {
-              RegExpMatch? match10 = search10.firstMatch(currentLineText);
-              if (match10 != null) {
-                String potentialIsbn = match10.group(0)!;
-                if (isISBN10(potentialIsbn)) {
-                  isbnValue = potentialIsbn;
-                }
-              }
-            }
-
-            if (isbnValue != null) {
-              await _stopImageStream(); // Add this before popping for text
-              if (mounted) {
-                Navigator.pop(context, isbnValue);
-              }
-              return;
-            }
-          }
-        }
+        await search(recognizedText);
       }
     } catch (e, stackTrace) {
       debugPrint('****** Error processing image with ML Kit: $e');
       debugPrint('****** Stack Trace: $stackTrace');
     } finally {
-      // This executes if no early 'return' (due to a pop) occurred, or if an error happened.
       if (mounted) {
         _isProcessing = false;
         _resetProcessingDelay();

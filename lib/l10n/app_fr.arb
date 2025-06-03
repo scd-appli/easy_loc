@@ -28,5 +28,8 @@
     "deleteHistory":"Supprimer l'historique",
     "deleteConfirmation":"C'est une action irreversible",
     "delete":"Supprimer",
-    "cancel":"Annuler"
+    "cancel":"Annuler",
+    "fileSaved":"Fichier enregistré.",
+    "permissionDenied":"Permissions refusées.",
+    "saveCancelledUser":"Enregistrement annulé par l'utilisateur."
 }
