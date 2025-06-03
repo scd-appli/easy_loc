@@ -5,15 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 Future<bool> grantAccess() async {
-  bool permissionGranted = false;
 
   if (Platform.isAndroid) {
-    permissionGranted = await grantAccessAndroid();
-  } else {
-    permissionGranted = true;
+    return await grantAccessAndroid();
   }
 
-  return permissionGranted;
+  return true;
 }
 
 Future<bool> grantAccessAndroid() async {
