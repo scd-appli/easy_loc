@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../functions/utils.dart';
 import '../components/card.dart';
 import '../components/custom_app_bar.dart';
@@ -8,6 +9,20 @@ import '../components/scan_button.dart';
 import '../functions/history_modele.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../functions/api.dart';
+
+Future<void> _addHistoryEntryIsolate(Map<String, dynamic> params) async {
+  // Extract the token and initialize BackgroundIsolateBinaryMessenger
+  final RootIsolateToken token = params['token'] as RootIsolateToken;
+  BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+
+  final String isbn = params['isbn'] as String;
+  final List<String> ppnValue =
+      (params['ppnValue'] as List<dynamic>).cast<String>();
+  final int count = params['count'] as int;
+
+  final HistoryModele history = HistoryModele();
+  await history.add(isbn, ppnValue, count);
+}
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -18,7 +33,6 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final TextEditingController _isbnController = TextEditingController();
-  final HistoryModele _history = HistoryModele();
 
   List<Map<String, dynamic>>? _data;
   String? _noData;
@@ -68,7 +82,17 @@ class _HomeState extends State<Home> {
         ppnList.map((ppn) => ppn['ppn']).cast<String>().toList();
 
     if (fromHistory != null && !fromHistory) {
-      _history.add(isbn, ppnValue, sortedLibraries.length);
+      final RootIsolateToken? token = RootIsolateToken.instance;
+      if (token != null) {
+        compute(_addHistoryEntryIsolate, {
+          'token': token,
+          'isbn': isbn,
+          'ppnValue': ppnValue,
+          'count': sortedLibraries.length,
+        });
+      } else {
+        debugPrint("the token for the isolate is null is null");
+      }
     }
 
     setState(() {

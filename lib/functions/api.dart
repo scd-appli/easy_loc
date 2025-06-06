@@ -2,13 +2,21 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart';
 
 const String sudocApiBaseUrl = "https://www.sudoc.fr/services";
 const String isbn2ppnEndpoint = "$sudocApiBaseUrl/isbn2ppn/";
 const String issn2ppnEndpoint = "$sudocApiBaseUrl/issn2ppn/";
 const String multiwhereEndpoint = "$sudocApiBaseUrl/multiwhere/";
+const String unimarcEndpoint = "https://www.sudoc.fr/";
 
-Future<dynamic> getAPI(String url, {http.Client? client}) async {
+enum FileFormat { json, xml }
+
+Future<dynamic> getAPI(
+  String url, {
+  http.Client? client,
+  FileFormat? format = FileFormat.json,
+}) async {
   final httpClient = client ?? http.Client();
   try {
     var response = await httpClient.get(
@@ -17,6 +25,10 @@ Future<dynamic> getAPI(String url, {http.Client? client}) async {
     );
     if (response.statusCode != 200 && response.statusCode != 404) {
       throw Exception("Failed to fetch, status code : ${response.statusCode}");
+    }
+
+    if (format == FileFormat.xml) {
+      return response.body;
     }
     return jsonDecode(response.body);
   } finally {
@@ -133,4 +145,43 @@ Future<List<Map<String, dynamic>>> multiwhere(
   );
 
   return results;
+}
+
+Future<Map<String, List<String>>?> unimarc(
+  String ppn, {
+  http.Client? client,
+}) async {
+  try {
+    final response = await getAPI(
+      "$unimarcEndpoint$ppn.xml",
+      client: client,
+      format: FileFormat.xml,
+    );
+    final XmlDocument document = XmlDocument.parse(response);
+    final Iterable<XmlElement> datafields = document.descendantElements.where(
+      (element) =>
+          element.localName == 'datafield' &&
+          element.getAttribute('tag') == '200',
+    );
+
+    Map<String, List<String>> result = {};
+
+    for (var datafieldElement in datafields) {
+      for (var subfieldElement in datafieldElement.findElements('subfield')) {
+        var code = subfieldElement.getAttribute("code");
+        var text = subfieldElement.innerText;
+        if (code != null && text.isNotEmpty) {
+          if (!result.containsKey(code)) {
+            result[code] = [];
+          }
+          result[code]!.add(text);
+        }
+      }
+    }
+
+    return result;
+  } catch (e) {
+    debugPrint("Error fetching for unimarc, ppn: $ppn, error: $e");
+    return null;
+  }
 }

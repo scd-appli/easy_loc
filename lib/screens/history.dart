@@ -30,9 +30,7 @@ class _HistoryState extends State<History> {
   }
 
   Future<void> _sync() async {
-    Map<String, List<List<String>>>? mapList = await _history.get(
-      format: HistoryFormat.history,
-    );
+    Map<String, List<List<String>>>? mapList = await _history.get();
 
     if (mapList == null || mapList['isbn'] == null) {
       list = [];
