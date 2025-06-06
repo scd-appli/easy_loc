@@ -48,13 +48,6 @@ class _HomeState extends State<Home> {
       return;
     }
 
-    List<String> ppnValue =
-        ppnList.map((ppn) => ppn['ppn']).cast<String>().toList();
-
-    if (fromHistory != null && !fromHistory) {
-      _history.add(isbn, ppnValue);
-    }
-
     List<Map<String, dynamic>> response = await multiwhere(ppnList);
 
     List<Map<String, String>> allLibraries =
@@ -70,6 +63,13 @@ class _HomeState extends State<Home> {
       sortLibraries,
       allLibraries,
     );
+
+    List<String> ppnValue =
+        ppnList.map((ppn) => ppn['ppn']).cast<String>().toList();
+
+    if (fromHistory != null && !fromHistory) {
+      _history.add(isbn, ppnValue, sortedLibraries.length);
+    }
 
     setState(() {
       _noData = null;

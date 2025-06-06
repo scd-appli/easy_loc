@@ -30,7 +30,7 @@ class _HistoryState extends State<History> {
   }
 
   Future<void> _sync() async {
-    Map<String, List<String>>? mapList = await _history.get(
+    Map<String, List<List<String>>>? mapList = await _history.get(
       format: HistoryFormat.history,
     );
 
@@ -40,7 +40,7 @@ class _HistoryState extends State<History> {
       return;
     }
 
-    list = mapList['isbn'];
+    list = mapList['isbn']!.getOnlyIndex(0).cast<String>();
 
     setState(() {});
   }
@@ -118,12 +118,6 @@ class _HistoryState extends State<History> {
                 title: element.value,
                 onTap: () => Navigator.pop(context, element.value),
                 actions: [
-                  IconButton(
-                    onPressed: () async {
-                      await _history.toDownload(context, isbn: element.value);
-                    },
-                    icon: Icon(Icons.save),
-                  ),
                   IconButton(
                     onPressed: () async {
                       await _history.delete(
