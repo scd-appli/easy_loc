@@ -23,7 +23,7 @@ To correctly use the CSV format in excel follows these steps:
  3. Select the CSV file you want to import.
  4. In the import dialog, make sure to set the delimiter to the comma (`,`) and click on load.
 
- ![Excel import dialog showing comma delimiter selection](assets/delimiter.png)
+ ![Excel import dialog showing comma delimiter selection](assets/delimiter-dialog.png)
 
  5. Your all set. It should give something like this:
 
