@@ -7,10 +7,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
+import 'package:share_plus/share_plus.dart';
 import '../functions/permission.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class HistoryModele {
+class UserHistory {
   final String _historyKey = "history";
   final List<String> header = [
     "ISBN/ISSN",
@@ -28,7 +29,7 @@ class HistoryModele {
     "code z",
   ];
 
-  HistoryModele();
+  UserHistory();
 
   Future<File> _getFile({String? isbn}) async {
     final directory = await getApplicationDocumentsDirectory();
@@ -240,6 +241,33 @@ class HistoryModele {
     } else {
       debugPrint('Storage permission IS DENIED.');
       if (context.mounted) showSnackBar(context, Text(l10n.permissionDenied));
+    }
+  }
+
+  Future<void> toShare(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    try{
+      final File historyFile = await _getFile();
+
+      final params = ShareParams(
+        files: [XFile(historyFile.path)],
+      );
+
+      final result = await SharePlus.instance.share(params);
+
+      if (result.status == ShareResultStatus.success){
+        if(context.mounted) showSnackBar(context, Text(l10n.fileShared));
+        return;
+      }
+
+      if (result.status == ShareResultStatus.dismissed){
+        if (context.mounted) showSnackBar(context, Text(l10n.shareCancelledUser));
+        return;
+      }
+
+      
+    }catch(e){
+      debugPrint("error sharing the history: $e");
     }
   }
 }

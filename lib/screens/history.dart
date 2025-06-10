@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../components/custom_app_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import "../functions/history_modele.dart";
+import "../functions/user_history.dart";
 import '../components/card.dart';
 import '../functions/utils.dart';
 
@@ -13,7 +13,7 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
-  final _history = HistoryModele();
+  final _history = UserHistory();
   late List<String>? list;
   bool _isLoading = true;
 
@@ -66,6 +66,9 @@ class _HistoryState extends State<History> {
       appBar: CustomAppBar(
         title: l10n.historyTitle,
         actions: [
+          IconButton(onPressed: ()async{
+            await _history.toShare(context);
+          }, icon: Icon(Icons.share_outlined)),
           IconButton(
             onPressed: () async {
               await _history.toDownload(context);
