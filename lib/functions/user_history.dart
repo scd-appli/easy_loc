@@ -101,9 +101,7 @@ class UserHistory {
   }
 
   List<List<String>> _csvListToString(String data) {
-    return CsvToListConverter(
-      shouldParseNumbers: false,
-    ).convert(data);
+    return CsvToListConverter(shouldParseNumbers: false).convert(data);
   }
 
   String _formateData({

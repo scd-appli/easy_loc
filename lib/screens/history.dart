@@ -115,27 +115,30 @@ class _HistoryState extends State<History> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children:
-            list!.asMap().entries.map((element) {
-              return CustomCard(
-                title: element.value,
-                onTap: () => Navigator.pop(context, element.value),
-                actions: [
-                  IconButton(
-                    onPressed: () async {
-                      await _history.delete(
-                        index: element.key,
-                        isbn: element.value,
-                      );
-                      await _sync();
-                    },
-                    icon: Icon(Icons.delete, color: Colors.red[300]),
-                  ),
-                ],
-              );
-            }).toList(),
+      body: RefreshIndicator(
+        onRefresh: () => _sync(),
+        child: ListView(
+          padding: const EdgeInsets.all(8),
+          children:
+              list!.asMap().entries.map((element) {
+                return CustomCard(
+                  title: element.value,
+                  onTap: () => Navigator.pop(context, element.value),
+                  actions: [
+                    IconButton(
+                      onPressed: () async {
+                        await _history.delete(
+                          index: element.key,
+                          isbn: element.value,
+                        );
+                        await _sync();
+                      },
+                      icon: Icon(Icons.delete, color: Colors.red[300]),
+                    ),
+                  ],
+                );
+              }).toList(),
+        ),
       ),
     );
   }
