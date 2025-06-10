@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:easy_loc/components/snack_bar.dart';
+import 'package:easy_loc/functions/api.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,10 +10,23 @@ import 'package:csv/csv.dart';
 import '../functions/permission.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-enum HistoryFormat { history, isbn }
-
 class HistoryModele {
   final String _historyKey = "history";
+  final List<String> header = [
+    "ISBN/ISSN",
+    "Count",
+    "PPN",
+    "code a",
+    "code c",
+    "code d",
+    "code e",
+    "code f",
+    "code g",
+    "code h",
+    "code i",
+    "code r",
+    "code z",
+  ];
 
   HistoryModele();
 
@@ -58,35 +72,13 @@ class HistoryModele {
     return directoryData;
   }
 
-  Future<Map<String, List<String>>?> get({
-    required HistoryFormat format,
-    String? isbn,
-  }) async {
+  Future<Map<String, List<List<String>>>?> get() async {
     try {
-      switch (format) {
-        case HistoryFormat.history:
-          final file = await _getFile();
+      final file = await _getFile();
 
-          List<String>? list = await _readAndFormatFile(file);
+      List<List<String>>? list = await _readAndFormatFile(file);
 
-          return list != null ? {"isbn": list} : null;
-
-        case HistoryFormat.isbn:
-          if (isbn == null) {
-            throw FormatException("You must provide a ppn for the format isbn");
-          }
-
-          final File file = await _getFile(isbn: isbn);
-
-          List<String>? list = await _readAndFormatFile(file);
-
-          return list != null
-              ? {
-                "isbn": [isbn],
-                "ppn": list,
-              }
-              : null;
-      }
+      return list != null ? {"isbn": list} : null;
     } catch (e) {
       debugPrint("Error reading history CSV: $e");
       return null;
@@ -107,7 +99,7 @@ class HistoryModele {
     return ListToCsvConverter(eol: '\n').convert(data);
   }
 
-  List<List<dynamic>> _csvListToString(String data) {
+  List<List<String>> _csvListToString(String data) {
     return CsvToListConverter(
       eol: '\n',
       shouldParseNumbers: false,
@@ -123,7 +115,7 @@ class HistoryModele {
     return _listToCsv(dataBody);
   }
 
-  Future<List<String>?> _readAndFormatFile(File file) async {
+  Future<List<List<String>>?> _readAndFormatFile(File file) async {
     if (!await file.exists()) {
       return null;
     }
@@ -134,50 +126,46 @@ class HistoryModele {
       return null;
     }
 
-    final List<List<dynamic>> rowsAsListOfValues = _csvListToString(csvString);
+    final List<List<String>> rowsAsListOfValues = _csvListToString(csvString);
 
-    return rowsAsListOfValues
-        .skip(1)
-        .reduce((acc, innerList) => acc = [...acc, ...innerList])
-        .cast<String>();
+    return rowsAsListOfValues.skip(1).toList();
   }
 
-  Future<void> add(String isbn, List<String>? ppn) async {
-    Map<String, List<String>>? isbnMap = await get(
-      format: HistoryFormat.history,
-    );
+  Future<void> add(String isbn, List<String> ppn, int count) async {
+    Map<String, List<List<String>>>? isbnMap = await get();
 
     isbnMap ??= {'isbn': []};
 
-    List<String> isbnList = isbnMap["isbn"]!.toList();
+    List<List<String>> isbnListReversed = isbnMap["isbn"]!.reversed.toList();
+    List<String> listMergedWithPPN = [isbn];
+    listMergedWithPPN.add(count.toString());
+    listMergedWithPPN.add(ppn.join('; '));
 
-    List<String> isbnListReversed = isbnList.reversed.toList();
-    isbnListReversed.add(isbn);
-    List<String> newIsbnList = isbnListReversed.reversed.toList();
+    Map<String, List<String>>? unimarcResult = await unimarc(ppn[0]);
+    debugPrint(unimarcResult.toString());
 
-    List<List<String>> isbnListRowColumn =
-        newIsbnList.map((isbn) => [isbn]).toList();
+    List<String> unimarcFieldDescriptors = header.sublist(3);
 
-    await _saveFile(
-      dataFormated: _formateData(
-        dataBody: isbnListRowColumn,
-        headerData: ["ISBN/ISSN"],
-      ),
-      file: await _getFile(),
-    );
+    if (unimarcResult != null) {
+      for (String descriptor in unimarcFieldDescriptors) {
+        String codeKey = descriptor.substring("code ".length);
 
-    if (ppn == null) {
-      return;
+        if (unimarcResult.containsKey(codeKey)) {
+          listMergedWithPPN.add(unimarcResult[codeKey]!.join("; "));
+        } else {
+          listMergedWithPPN.add("");
+        }
+      }
+    } else {
+      listMergedWithPPN.addAll(List.filled(unimarcFieldDescriptors.length, ""));
     }
 
-    List<List<String>> ppnListRowColumn = ppn.map((ppn) => [ppn]).toList();
+    isbnListReversed.add(listMergedWithPPN);
+    List<List<String>> newIsbnList = isbnListReversed.reversed.toList();
 
     await _saveFile(
-      dataFormated: _formateData(
-        dataBody: ppnListRowColumn,
-        headerData: ['ppn'],
-      ),
-      file: await _getFile(isbn: isbn),
+      dataFormated: _formateData(dataBody: newIsbnList, headerData: header),
+      file: await _getFile(),
     );
   }
 
@@ -193,7 +181,7 @@ class HistoryModele {
   }
 
   Future<void> delete({required int index, required String isbn}) async {
-    Map<String, List<String>>? list = await get(format: HistoryFormat.history);
+    Map<String, List<List<String>>>? list = await get();
 
     if (list == null ||
         index < 0 ||
@@ -204,14 +192,8 @@ class HistoryModele {
 
     list['isbn']!.removeAt(index);
 
-    List<List<String>> isbnListRowColumn =
-        list['isbn']!.map((isbn) => [isbn]).toList();
-
     await _saveFile(
-      dataFormated: _formateData(
-        dataBody: isbnListRowColumn,
-        headerData: ['isbn'],
-      ),
+      dataFormated: _formateData(dataBody: list['isbn']!, headerData: header),
       file: await _getFile(),
     );
 
@@ -222,7 +204,7 @@ class HistoryModele {
     }
   }
 
-  Future<void> toDownload(BuildContext context, {String? isbn}) async {
+  Future<void> toDownload(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
 
     bool permissionGranted = await grantAccess();
@@ -230,7 +212,7 @@ class HistoryModele {
     if (permissionGranted) {
       debugPrint("Storage permission IS GRANTED for the operation.");
       try {
-        final File historyFile = await _getFile(isbn: isbn);
+        final File historyFile = await _getFile();
         final csvString = await historyFile.readAsString();
 
         if (!await historyFile.exists()) {
@@ -241,7 +223,7 @@ class HistoryModele {
         final bytes = utf8.encode(csvString);
 
         String? dlFilePath = await _saveUserFileLocation(
-          defaultFileName: "EasyLocHistory${isbn ?? ""}.csv",
+          defaultFileName: "EasyLocHistory.csv",
           bytes: Uint8List.fromList(bytes),
         );
 

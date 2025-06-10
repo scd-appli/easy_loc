@@ -3,6 +3,7 @@ import '../components/custom_app_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import "../functions/history_modele.dart";
 import '../components/card.dart';
+import '../functions/utils.dart';
 
 class History extends StatefulWidget {
   const History({super.key});
@@ -30,9 +31,7 @@ class _HistoryState extends State<History> {
   }
 
   Future<void> _sync() async {
-    Map<String, List<String>>? mapList = await _history.get(
-      format: HistoryFormat.history,
-    );
+    Map<String, List<List<String>>>? mapList = await _history.get();
 
     if (mapList == null || mapList['isbn'] == null) {
       list = [];
@@ -40,7 +39,7 @@ class _HistoryState extends State<History> {
       return;
     }
 
-    list = mapList['isbn'];
+    list = mapList['isbn']!.getOnlyIndex(0).cast<String>();
 
     setState(() {});
   }
@@ -118,12 +117,6 @@ class _HistoryState extends State<History> {
                 title: element.value,
                 onTap: () => Navigator.pop(context, element.value),
                 actions: [
-                  IconButton(
-                    onPressed: () async {
-                      await _history.toDownload(context, isbn: element.value);
-                    },
-                    icon: Icon(Icons.save),
-                  ),
                   IconButton(
                     onPressed: () async {
                       await _history.delete(
