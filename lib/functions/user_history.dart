@@ -97,12 +97,11 @@ class UserHistory {
   }
 
   String _listToCsv(List<List<dynamic>> data) {
-    return ListToCsvConverter(eol: '\n').convert(data);
+    return ListToCsvConverter().convert(data);
   }
 
   List<List<String>> _csvListToString(String data) {
     return CsvToListConverter(
-      eol: '\n',
       shouldParseNumbers: false,
     ).convert(data);
   }
