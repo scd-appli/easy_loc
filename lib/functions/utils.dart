@@ -88,7 +88,7 @@ class IsISBN extends TextInputFormatter {
     }
 
     // Resolve
-    return TextEditingValue(text: value);
+    return newValue;
   }
 }
 
