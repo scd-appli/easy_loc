@@ -2,7 +2,17 @@
 
 A mobile application that returns which French university libraries (BU) have a book, based on its ISBN/ISSN.
 
-## CSV Export
+## Features
+- Scan ISBN/ISSN barcodes with the camera.
+- Scan ISBN/ISSN barcodes from text.
+- Google Maps links for libraries possessing the book.
+- Dark/Light mode support.
+- Language support (French, English)
+- History of searched books.
+- Export history as a CSV file.
+- Share the history file.
+
+### CSV Export
 
 Use the default (RFC conform) configuration:
 

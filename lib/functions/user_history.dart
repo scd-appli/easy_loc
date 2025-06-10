@@ -246,27 +246,24 @@ class UserHistory {
 
   Future<void> toShare(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    try{
+    try {
       final File historyFile = await _getFile();
 
-      final params = ShareParams(
-        files: [XFile(historyFile.path)],
-      );
+      final params = ShareParams(files: [XFile(historyFile.path)]);
 
       final result = await SharePlus.instance.share(params);
 
-      if (result.status == ShareResultStatus.success){
-        if(context.mounted) showSnackBar(context, Text(l10n.fileShared));
+      if (result.status == ShareResultStatus.success) {
+        if (context.mounted) showSnackBar(context, Text(l10n.fileShared));
         return;
       }
 
-      if (result.status == ShareResultStatus.dismissed){
-        if (context.mounted) showSnackBar(context, Text(l10n.shareCancelledUser));
+      if (result.status == ShareResultStatus.dismissed) {
+        if (context.mounted)
+          showSnackBar(context, Text(l10n.shareCancelledUser));
         return;
       }
-
-      
-    }catch(e){
+    } catch (e) {
       debugPrint("error sharing the history: $e");
     }
   }

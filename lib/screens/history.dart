@@ -66,9 +66,12 @@ class _HistoryState extends State<History> {
       appBar: CustomAppBar(
         title: l10n.historyTitle,
         actions: [
-          IconButton(onPressed: ()async{
-            await _history.toShare(context);
-          }, icon: Icon(Icons.share_outlined)),
+          IconButton(
+            onPressed: () async {
+              await _history.toShare(context);
+            },
+            icon: Icon(Icons.share_outlined),
+          ),
           IconButton(
             onPressed: () async {
               await _history.toDownload(context);
