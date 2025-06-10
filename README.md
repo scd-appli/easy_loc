@@ -9,7 +9,7 @@ A mobile application that returns which French university libraries (BU) have a 
 - Dark/Light mode support.
 - Language support (French, English)
 - History of searched books.
-- Export history as a CSV file.
+- Export history to CSV, including library count, a list of associated PPNs, and the UNIMARC code 200 (derived from the first PPN of the list).
 - Share the history file.
 
 ### CSV Export
