@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../screens/camera_scan.dart';
 
 class ScanButton extends StatelessWidget {
   final Function({bool? fromHistory}) onSend;
@@ -15,9 +14,9 @@ class ScanButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
-        final String? barcodeResult = await Navigator.push<String>(
+        final String? barcodeResult = await Navigator.pushNamed<String>(
           context,
-          MaterialPageRoute(builder: (context) => const CameraScan()),
+          '/scan',
         );
 
         if (barcodeResult != null && barcodeResult.isNotEmpty) {

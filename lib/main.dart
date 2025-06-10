@@ -1,14 +1,11 @@
 import 'dart:io';
 
-import 'package:easy_loc/screens/camera_scan.dart';
-import 'package:easy_loc/screens/history.dart';
+import 'package:easy_loc/functions/router_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/home.dart';
-import 'screens/settings.dart';
 import 'functions/display_mode.dart';
 import 'functions/display_language.dart';
 
@@ -39,6 +36,7 @@ class _EasyLocState extends State<EasyLoc> {
   ThemeMode _themeMode = ThemeMode.system;
   SupportedLanguages _languageSetting = SupportedLanguages.system;
   Locale _locale = Locale(Platform.localeName.split('_')[0]);
+  final RouteGenerator _router = RouteGenerator();
 
   @override
   void initState() {
@@ -106,13 +104,9 @@ class _EasyLocState extends State<EasyLoc> {
         GlobalCupertinoLocalizations.delegate,
       ],
       locale: _locale,
-      routes: {
-        '/settings': (context) => Settings(),
-        '/history': (context) => History(),
-        '/scan': (context) => CameraScan(),
-      },
+      initialRoute: '/',
+      onGenerateRoute: _router.routeGenerate,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const Home(),
     );
   }
 }
