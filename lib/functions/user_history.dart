@@ -256,8 +256,9 @@ class UserHistory {
       }
 
       if (result.status == ShareResultStatus.dismissed) {
-        if (context.mounted)
+        if (context.mounted) {
           showSnackBar(context, Text(l10n.shareCancelledUser));
+        }
         return;
       }
     } catch (e) {
