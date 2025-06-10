@@ -6,7 +6,7 @@ import '../components/card.dart';
 import '../components/custom_app_bar.dart';
 import '../components/isbn_input_form.dart';
 import '../components/scan_button.dart';
-import '../functions/history_modele.dart';
+import '../functions/user_history.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../functions/api.dart';
 
@@ -20,7 +20,7 @@ Future<void> _addHistoryEntryIsolate(Map<String, dynamic> params) async {
       (params['ppnValue'] as List<dynamic>).cast<String>();
   final int count = params['count'] as int;
 
-  final HistoryModele history = HistoryModele();
+  final UserHistory history = UserHistory();
   await history.add(isbn, ppnValue, count);
 }
 

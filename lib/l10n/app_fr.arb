@@ -1,15 +1,15 @@
 {
     "@@locale": "fr",
     "appName": "EasyLoc",
-    "scanCancelledUser": "Scan annulé par l'utilisateur.",
+    "scanCancelledUser": "Scan annulé",
     "scanFailed": "Le scan a échoué",
     "cameraAccessDenied": "L'autorisation d'accès à la caméra a été refusée. Veuillez accorder l'autorisation dans les paramètres de l'application.",
     "unknowError": "Une erreur inconnue s'est produite",
-    "scanCancelledBeforeData": "Scan annulé avant la capture des données.",
+    "scanCancelledBeforeData": "Scan annulé avant la capture des données",
     "unexpectedError": "Une erreur inattendue s'est produite",
     "invalidInput": "Entrée invalide",
     "noPPNAssociated": "Aucun enregistrement n'est associé à cette valeur",
-    "noLibraryGotThis": "Aucune bibliothèque ne possède cet article.",
+    "noLibraryGotThis": "Aucune bibliothèque ne possède cet article",
     "foundIn": "Trouvé dans",
     "library": "bibliothèque",
     "libraries": "bibliothèques",
@@ -29,7 +29,9 @@
     "deleteConfirmation":"C'est une action irreversible",
     "delete":"Supprimer",
     "cancel":"Annuler",
-    "fileSaved":"Fichier enregistré.",
-    "permissionDenied":"Permissions refusées.",
-    "saveCancelledUser":"Enregistrement annulé par l'utilisateur."
+    "fileSaved":"Fichier enregistré",
+    "permissionDenied":"Permissions refusées",
+    "saveCancelledUser":"Enregistrement annulé",
+    "shareCancelledUser":"Partage annulé",
+    "fileShared":"Fichier partagé"
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../components/custom_app_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import "../functions/history_modele.dart";
+import "../functions/user_history.dart";
 import '../components/card.dart';
 import '../functions/utils.dart';
 
@@ -13,7 +13,7 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
-  final _history = HistoryModele();
+  final _history = UserHistory();
   late List<String>? list;
   bool _isLoading = true;
 
@@ -68,6 +68,12 @@ class _HistoryState extends State<History> {
         actions: [
           IconButton(
             onPressed: () async {
+              await _history.toShare(context);
+            },
+            icon: Icon(Icons.share_outlined),
+          ),
+          IconButton(
+            onPressed: () async {
               await _history.toDownload(context);
             },
             icon: Icon(Icons.save),
@@ -109,27 +115,30 @@ class _HistoryState extends State<History> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children:
-            list!.asMap().entries.map((element) {
-              return CustomCard(
-                title: element.value,
-                onTap: () => Navigator.pop(context, element.value),
-                actions: [
-                  IconButton(
-                    onPressed: () async {
-                      await _history.delete(
-                        index: element.key,
-                        isbn: element.value,
-                      );
-                      await _sync();
-                    },
-                    icon: Icon(Icons.delete, color: Colors.red[300]),
-                  ),
-                ],
-              );
-            }).toList(),
+      body: RefreshIndicator(
+        onRefresh: () => _sync(),
+        child: ListView(
+          padding: const EdgeInsets.all(8),
+          children:
+              list!.asMap().entries.map((element) {
+                return CustomCard(
+                  title: element.value,
+                  onTap: () => Navigator.pop(context, element.value),
+                  actions: [
+                    IconButton(
+                      onPressed: () async {
+                        await _history.delete(
+                          index: element.key,
+                          isbn: element.value,
+                        );
+                        await _sync();
+                      },
+                      icon: Icon(Icons.delete, color: Colors.red[300]),
+                    ),
+                  ],
+                );
+              }).toList(),
+        ),
       ),
     );
   }
