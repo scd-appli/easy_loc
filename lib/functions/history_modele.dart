@@ -10,16 +10,6 @@ import 'package:csv/csv.dart';
 import '../functions/permission.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-extension Csv on List<List> {
-  List getOnlyIndex(int index) {
-    List list = [];
-    for (var row in this) {
-      list.add(row[index]);
-    }
-    return list;
-  }
-}
-
 class HistoryModele {
   final String _historyKey = "history";
   final List<String> header = [

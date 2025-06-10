@@ -3,6 +3,7 @@ import '../components/custom_app_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import "../functions/history_modele.dart";
 import '../components/card.dart';
+import '../functions/utils.dart';
 
 class History extends StatefulWidget {
   const History({super.key});

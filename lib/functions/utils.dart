@@ -43,6 +43,16 @@ extension StringExtensions on String {
   }
 }
 
+extension Csv on List<List> {
+  List getOnlyIndex(int index) {
+    List list = [];
+    for (var row in this) {
+      list.add(row[index]);
+    }
+    return list;
+  }
+}
+
 class IsISBN extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

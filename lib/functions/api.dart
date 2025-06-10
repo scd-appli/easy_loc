@@ -30,6 +30,7 @@ Future<dynamic> getAPI(
     if (format == FileFormat.xml) {
       return response.body;
     }
+
     return jsonDecode(response.body);
   } finally {
     if (client == null) {
