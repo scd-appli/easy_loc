@@ -14,7 +14,7 @@ Excel  by default use `;` as field separator. So it will give this (it can also 
 
 ![Example of incorrect CSV formatting in Excel](assets/example-incorrect-formatting.png)
 
-To correctly use the CSV format in excel follow the following steps:
+To correctly use the CSV format in excel follows these steps:
  1. Open Excel and go to the "Data" tab.
  2. Click on "Get Data" or "From Text/CSV".
 
