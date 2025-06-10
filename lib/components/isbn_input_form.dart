@@ -42,6 +42,7 @@ class IsbnInputForm extends StatelessWidget {
                   TextField(
                     controller: controller,
                     onChanged: onChanged,
+                    autofocus: false,
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       labelText: "ISBN/ISSN",
