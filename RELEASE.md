@@ -1,10 +1,13 @@
 ## ⚙️ Changes
- - Slight improvement on the ISBN text field regex validation
- - improve the UX by erasing the previous researched result 
+ - Added the number of returned librairies in the export file.
+ - Added the ppn list in the export file.
 
-## 🔨 Fix
- - Fixed a bug where the ISBN scanned was not being added to the history
+## 🔨 Fixes
+ - Fixed a bug when there was an X in the isbn input field and you wrote a number before it, the focus would go to the end of the isbn input field.
 
 ## 🔥 Features
- - Added ISSN Support
- - Added CSV export functionality
+ - Added the unimarc notice of the first ppn for the code 200 in the export file.
+ - Added the share functionality to share the csv history file.
+
+## ⚠️ Warning
+Once installed you will lose all your current history.

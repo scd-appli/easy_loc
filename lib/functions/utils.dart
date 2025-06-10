@@ -43,6 +43,16 @@ extension StringExtensions on String {
   }
 }
 
+extension Csv on List<List> {
+  List getOnlyIndex(int index) {
+    List list = [];
+    for (var row in this) {
+      list.add(row[index]);
+    }
+    return list;
+  }
+}
+
 class IsISBN extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -70,6 +80,13 @@ class IsISBN extends TextInputFormatter {
     // Replace x by X
     if (value.contains("x")) {
       value = value.replaceFirst("x", "X");
+
+      // if X exist and not at the end, pushed to the end
+      if (value.contains("X") && !value.endsWith("X")) {
+        return TextEditingValue(text: value.pushToTheEnd("X"));
+      }
+
+      return TextEditingValue(text: value);
     }
 
     // if X exist and not at the end, pushed to the end
@@ -78,7 +95,7 @@ class IsISBN extends TextInputFormatter {
     }
 
     // Resolve
-    return TextEditingValue(text: value);
+    return newValue;
   }
 }
 

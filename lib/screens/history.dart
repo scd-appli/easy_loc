@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../components/custom_app_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import "../functions/history_modele.dart";
+import "../functions/user_history.dart";
 import '../components/card.dart';
+import '../functions/utils.dart';
 
 class History extends StatefulWidget {
   const History({super.key});
@@ -12,7 +13,7 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
-  final _history = HistoryModele();
+  final _history = UserHistory();
   late List<String>? list;
   bool _isLoading = true;
 
@@ -30,9 +31,7 @@ class _HistoryState extends State<History> {
   }
 
   Future<void> _sync() async {
-    Map<String, List<String>>? mapList = await _history.get(
-      format: HistoryFormat.history,
-    );
+    Map<String, List<List<String>>>? mapList = await _history.get();
 
     if (mapList == null || mapList['isbn'] == null) {
       list = [];
@@ -40,7 +39,7 @@ class _HistoryState extends State<History> {
       return;
     }
 
-    list = mapList['isbn'];
+    list = mapList['isbn']!.getOnlyIndex(0).cast<String>();
 
     setState(() {});
   }
@@ -67,6 +66,12 @@ class _HistoryState extends State<History> {
       appBar: CustomAppBar(
         title: l10n.historyTitle,
         actions: [
+          IconButton(
+            onPressed: () async {
+              await _history.toShare(context);
+            },
+            icon: Icon(Icons.share_outlined),
+          ),
           IconButton(
             onPressed: () async {
               await _history.toDownload(context);
@@ -110,33 +115,30 @@ class _HistoryState extends State<History> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children:
-            list!.asMap().entries.map((element) {
-              return CustomCard(
-                title: element.value,
-                onTap: () => Navigator.pop(context, element.value),
-                actions: [
-                  IconButton(
-                    onPressed: () async {
-                      await _history.toDownload(context, isbn: element.value);
-                    },
-                    icon: Icon(Icons.save),
-                  ),
-                  IconButton(
-                    onPressed: () async {
-                      await _history.delete(
-                        index: element.key,
-                        isbn: element.value,
-                      );
-                      await _sync();
-                    },
-                    icon: Icon(Icons.delete, color: Colors.red[300]),
-                  ),
-                ],
-              );
-            }).toList(),
+      body: RefreshIndicator(
+        onRefresh: () => _sync(),
+        child: ListView(
+          padding: const EdgeInsets.all(8),
+          children:
+              list!.asMap().entries.map((element) {
+                return CustomCard(
+                  title: element.value,
+                  onTap: () => Navigator.pop(context, element.value),
+                  actions: [
+                    IconButton(
+                      onPressed: () async {
+                        await _history.delete(
+                          index: element.key,
+                          isbn: element.value,
+                        );
+                        await _sync();
+                      },
+                      icon: Icon(Icons.delete, color: Colors.red[300]),
+                    ),
+                  ],
+                );
+              }).toList(),
+        ),
       ),
     );
   }

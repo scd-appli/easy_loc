@@ -42,6 +42,7 @@ class IsbnInputForm extends StatelessWidget {
                   TextField(
                     controller: controller,
                     onChanged: onChanged,
+                    autofocus: false,
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       labelText: "ISBN/ISSN",
@@ -54,7 +55,7 @@ class IsbnInputForm extends StatelessWidget {
                               )
                               : null,
                     ),
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.numberWithOptions(signed: true),
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9-Xx]')),
                       IsISBN(),

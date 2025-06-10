@@ -46,6 +46,53 @@ void main() {
     });
   });
 
+  group('Csv Extension', () {
+    test('getOnlyIndex should return column at specified index', () {
+      final csvData = [
+        ['Name', 'Age', 'City'],
+        ['Alice', '25', 'Paris'],
+        ['Bob', '30', 'London'],
+        ['Charlie', '35', 'Berlin'],
+      ];
+
+      // Test getting first column (index 0)
+      expect(csvData.getOnlyIndex(0), ['Name', 'Alice', 'Bob', 'Charlie']);
+
+      // Test getting second column (index 1)
+      expect(csvData.getOnlyIndex(1), ['Age', '25', '30', '35']);
+
+      // Test getting third column (index 2)
+      expect(csvData.getOnlyIndex(2), ['City', 'Paris', 'London', 'Berlin']);
+    });
+
+    test('getOnlyIndex should handle empty list', () {
+      final List<List> emptyData = [];
+      expect(emptyData.getOnlyIndex(0), isEmpty);
+    });
+
+    test('getOnlyIndex should handle mixed data types', () {
+      final mixedData = [
+        [1, 'text', true],
+        [2, 'more text', false],
+        [3, 'another', null],
+      ];
+
+      expect(mixedData.getOnlyIndex(0), [1, 2, 3]);
+      expect(mixedData.getOnlyIndex(1), ['text', 'more text', 'another']);
+      expect(mixedData.getOnlyIndex(2), [true, false, null]);
+    });
+
+    test('getOnlyIndex should handle single row', () {
+      final singleRow = [
+        ['single', 'row', 'data'],
+      ];
+
+      expect(singleRow.getOnlyIndex(0), ['single']);
+      expect(singleRow.getOnlyIndex(1), ['row']);
+      expect(singleRow.getOnlyIndex(2), ['data']);
+    });
+  });
+
   group('IsISBN TextInputFormatter', () {
     final formatter = IsISBN();
     const oldValue = TextEditingValue.empty;

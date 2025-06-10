@@ -564,5 +564,113 @@ void main() {
         expect(results[0]['libraries'], isEmpty);
       });
     });
+
+    group('unimarc', () {
+      test(
+        'parses XML response and extracts datafield 200 subfields',
+        () async {
+          mockClient = MockClient((request) async {
+            expect(request.url.toString(), '${unimarcEndpoint}test-ppn.xml');
+            return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<record>
+  <datafield tag="200" ind1=" " ind2=" ">
+    <subfield code="a">Title A</subfield>
+    <subfield code="c">Author A</subfield>
+    <subfield code="d">Publisher A</subfield>
+  </datafield>
+  <datafield tag="200" ind1=" " ind2=" ">
+    <subfield code="a">Title B</subfield>
+    <subfield code="e">Edition B</subfield>
+  </datafield>
+  <datafield tag="300" ind1=" " ind2=" ">
+    <subfield code="a">This should be ignored</subfield>
+  </datafield>
+</record>''', 200);
+          });
+
+          final result = await unimarc('test-ppn', client: mockClient);
+
+          expect(result, {
+            'a': ['Title A', 'Title B'],
+            'c': ['Author A'],
+            'd': ['Publisher A'],
+            'e': ['Edition B'],
+          });
+        },
+      );
+
+      test('handles empty XML response', () async {
+        mockClient = MockClient((request) async {
+          expect(request.url.toString(), '${unimarcEndpoint}empty-ppn.xml');
+          return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<record>
+</record>''', 200);
+        });
+
+        final result = await unimarc('empty-ppn', client: mockClient);
+        expect(result, {});
+      });
+
+      test('handles XML with no datafield 200', () async {
+        mockClient = MockClient((request) async {
+          expect(request.url.toString(), '${unimarcEndpoint}no-200-ppn.xml');
+          return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<record>
+  <datafield tag="300" ind1=" " ind2=" ">
+    <subfield code="a">Other field</subfield>
+  </datafield>
+</record>''', 200);
+        });
+
+        final result = await unimarc('no-200-ppn', client: mockClient);
+        expect(result, {});
+      });
+
+      test('filters out empty subfield text', () async {
+        mockClient = MockClient((request) async {
+          expect(
+            request.url.toString(),
+            '${unimarcEndpoint}empty-text-ppn.xml',
+          );
+          return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<record>
+  <datafield tag="200" ind1=" " ind2=" ">
+    <subfield code="a">Valid Text</subfield>
+    <subfield code="b"></subfield>
+    <subfield code="c">Another Valid Text</subfield>
+  </datafield>
+</record>''', 200);
+        });
+
+        final result = await unimarc('empty-text-ppn', client: mockClient);
+        expect(result, {
+          'a': ['Valid Text'],
+          'c': ['Another Valid Text'],
+        });
+      });
+
+      test('returns null on API error', () async {
+        mockClient = MockClient((request) async {
+          expect(request.url.toString(), '${unimarcEndpoint}error-ppn.xml');
+          return http.Response('Server Error', 500);
+        });
+
+        final result = await unimarc('error-ppn', client: mockClient);
+        expect(result, isNull);
+      });
+
+      test('returns null on XML parsing error', () async {
+        mockClient = MockClient((request) async {
+          expect(
+            request.url.toString(),
+            '${unimarcEndpoint}invalid-xml-ppn.xml',
+          );
+          return http.Response('Invalid XML content', 200);
+        });
+
+        final result = await unimarc('invalid-xml-ppn', client: mockClient);
+        expect(result, isNull);
+      });
+    });
   });
 }

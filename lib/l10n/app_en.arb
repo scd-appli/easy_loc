@@ -1,15 +1,15 @@
 {
     "@@locale": "en",
     "appName": "EasyLoc",
-    "scanCancelledUser": "Scan cancelled by user.",
+    "scanCancelledUser": "Scan cancelled",
     "scanFailed": "Scan failed",
     "cameraAccessDenied": "Camera permission was denied. Please grant permission in app settings.",
     "unknowError": "An unknown error occurred",
-    "scanCancelledBeforeData": "Scan cancelled before capturing data.",
+    "scanCancelledBeforeData": "Scan cancelled before capturing data",
     "unexpectedError": "An unexpected error occurred",
     "invalidInput": "Invalid input",
     "noPPNAssociated": "No record is associated with this value",
-    "noLibraryGotThis": "No library has this item.",
+    "noLibraryGotThis": "No library has this item",
     "foundIn": "Found in",
     "library": "librarie",
     "libraries": "librairies",
@@ -29,7 +29,9 @@
     "deleteConfirmation":"It's an action irreversible",
     "delete":"Delete",
     "cancel":"Cancel",
-    "fileSaved":"File saved.",
-    "permissionDenied":"Permission denied.",
-    "saveCancelledUser":"Saving Cancelled by the user."
+    "fileSaved":"File saved",
+    "permissionDenied":"Permission denied",
+    "saveCancelledUser":"Saving cancelled",
+    "shareCancelledUser":"Sharing cancelled",
+    "fileShared":"File shared"
 }
