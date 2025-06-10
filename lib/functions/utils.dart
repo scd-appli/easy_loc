@@ -80,6 +80,13 @@ class IsISBN extends TextInputFormatter {
     // Replace x by X
     if (value.contains("x")) {
       value = value.replaceFirst("x", "X");
+
+      // if X exist and not at the end, pushed to the end
+      if (value.contains("X") && !value.endsWith("X")) {
+        return TextEditingValue(text: value.pushToTheEnd("X"));
+      }
+
+      return TextEditingValue(text: value);
     }
 
     // if X exist and not at the end, pushed to the end
