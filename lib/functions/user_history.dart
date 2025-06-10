@@ -12,7 +12,7 @@ import '../functions/permission.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserHistory {
-  final String _historyKey = "history";
+  final String _historyKey = "EasyLocHistory";
   final List<String> header = [
     "ISBN/ISSN",
     "Count",
@@ -31,10 +31,10 @@ class UserHistory {
 
   UserHistory();
 
-  Future<File> _getFile({String? isbn}) async {
+  Future<File> _getFile() async {
     final directory = await getApplicationDocumentsDirectory();
 
-    File file = File('${directory.path}/data/$_historyKey${isbn ?? ""}.csv');
+    File file = File('${directory.path}/data/$_historyKey.csv');
 
     if (!await file.exists()) {
       await file.create(recursive: true);
@@ -194,12 +194,6 @@ class UserHistory {
       dataFormated: _formateData(dataBody: list['isbn']!, headerData: header),
       file: await _getFile(),
     );
-
-    File ppnFile = await _getFile(isbn: isbn);
-
-    if (await ppnFile.exists()) {
-      ppnFile.delete();
-    }
   }
 
   Future<void> toDownload(BuildContext context) async {

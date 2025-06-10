@@ -8,3 +8,6 @@
 ## 🔥 Features
  - Added the unimarc notice of the first ppn for the code 200 in the export file.
  - Added the share functionality to share the csv history file.
+
+## ⚠️ Warning
+Once installed you will lose all your current history.
