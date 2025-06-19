@@ -4,7 +4,7 @@ Une application mobile qui indique quelles bibliothèques universitaires (BU) fr
 
 ## Fonctionnalités
 - Scanner les codes-barres ISBN/ISSN avec l'appareil photo.
-- Scanner les codes-barres ISBN/ISSN à partir de texte.
+- Scanner les ISBN/ISSN à partir de texte.
 - Liens Google Maps pour les bibliothèques possédant le livre.
 - Support mode sombre/clair.
 - Support multilingue (Français, Anglais)

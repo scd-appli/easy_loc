@@ -4,7 +4,7 @@ A mobile application that returns which French university libraries (BU) have a 
 
 ## Features
 - Scan ISBN/ISSN barcodes with the camera.
-- Scan ISBN/ISSN barcodes from text.
+- Scan ISBN/ISSN from text.
 - Google Maps links for libraries possessing the book.
 - Dark/Light mode support.
 - Language support (French, English)
