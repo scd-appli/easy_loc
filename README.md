@@ -1,40 +1,40 @@
 # easy_loc
 
-A mobile application that returns which French university libraries (BU) have a book, based on its ISBN/ISSN.
+Une application mobile qui indique quelles bibliothèques universitaires (BU) françaises possèdent un livre, basée sur son ISBN/ISSN.
 
-## Features
-- Scan ISBN/ISSN barcodes with the camera.
-- Scan ISBN/ISSN barcodes from text.
-- Google Maps links for libraries possessing the book.
-- Dark/Light mode support.
-- Language support (French, English)
-- History of searched books.
-- Export history to CSV, including library count, a list of associated PPNs, and the UNIMARC code 200 (derived from the first PPN of the list).
-- Share the history file.
+## Fonctionnalités
+- Scanner les codes-barres ISBN/ISSN avec l'appareil photo.
+- Scanner les ISBN/ISSN à partir de texte.
+- Liens Google Maps pour les bibliothèques possédant le livre.
+- Support mode sombre/clair.
+- Support multilingue (Français, Anglais)
+- Historique des livres recherchés.
+- Export de l'historique en CSV, incluant le nombre de bibliothèques, une liste des PPN associés, et le code UNIMARC 200 (dérivé du premier PPN de la liste).
+- Partage du fichier d'historique.
 
-### CSV Export
+### Export CSV
 
-Use the default (RFC conform) configuration:
+Utilise la configuration par défaut (conforme RFC) :
 
-    , as field separator
-    " as text delimiter and
-    \r\n as eol.
+    , comme séparateur de champ
+    " comme délimiteur de texte et
+    \r\n comme fin de ligne.
 
-Excel  by default use `;` as field separator. So it will give this (it can also have issues with the formatting) :
+Excel utilise par défaut `;` comme séparateur de champ. Cela donnera donc ceci (il peut aussi y avoir des problèmes de formatage) :
 
-![Example of incorrect CSV formatting in Excel](assets/example-incorrect-formatting.png)
+![Exemple de formatage CSV incorrect dans Excel](assets/example-incorrect-formatting.png)
 
-To correctly use the CSV format in excel follows these steps:
- 1. Open Excel and go to the "Data" tab.
- 2. Click on "Get Data" or "From Text/CSV".
+Pour utiliser correctement le format CSV dans Excel, suivez ces étapes :
+ 1. Ouvrez Excel et allez dans l'onglet "Données".
+ 2. Cliquez sur "Obtenir des données" ou "À partir du texte/CSV".
 
- ![Excel Data tab with From Text/CSV option highlighted](assets/from-text-csv.png)
+ ![Onglet Données d'Excel avec l'option À partir du texte/CSV mise en évidence](assets/from-text-csv.png)
 
- 3. Select the CSV file you want to import.
- 4. In the import dialog, make sure to set the delimiter to the comma (`,`) and click on load.
+ 3. Sélectionnez le fichier CSV que vous voulez importer.
+ 4. Dans la boîte de dialogue d'importation, assurez-vous de définir le délimiteur sur la virgule (`,`) et l'encodage sur unicode UTF-8, puis cliquez sur charger.
 
- ![Excel import dialog showing comma delimiter selection](assets/delimiter-dialog.png)
+ ![Boîte de dialogue d'importation Excel montrant la sélection du délimiteur virgule](assets/delimiter-dialog.png)
 
- 5. Your all set. It should give something like this:
+ 5. Vous êtes prêt. Cela devrait donner quelque chose comme ceci :
 
- ![Example of correct CSV formatting in Excel after import](assets/correct-formatting.png)
+ ![Exemple de formatage CSV correct dans Excel après importation](assets/correct-formatting.png)
