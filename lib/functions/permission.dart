@@ -6,13 +6,13 @@ import 'package:permission_handler/permission_handler.dart';
 
 Future<bool> grantAccess() async {
   if (Platform.isAndroid) {
-    return await grantAccessAndroid();
+    return await _grantAccessAndroid();
   }
 
   return true;
 }
 
-Future<bool> grantAccessAndroid() async {
+Future<bool> _grantAccessAndroid() async {
   bool permissionGranted = false;
 
   final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();

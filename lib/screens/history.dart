@@ -58,7 +58,9 @@ class _HistoryState extends State<History> {
     if (list!.isEmpty) {
       return Scaffold(
         appBar: CustomAppBar(title: l10n.historyTitle),
-        body: Center(child: Text(l10n.emptyHistory)),
+        body: Center(
+          child: Text(l10n.emptyHistory, style: TextStyle(fontSize: 20)),
+        ),
       );
     }
 

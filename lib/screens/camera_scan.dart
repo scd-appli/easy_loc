@@ -37,19 +37,19 @@ class _CameraScanState extends State<CameraScan> {
     DeviceOrientation.landscapeRight: 270,
   };
 
-  void _delayedCameraInitialization(){
-    WidgetsBinding.instance.addPostFrameCallback((_){
+  void _delayedCameraInitialization() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       final route = ModalRoute.of(context);
-      if (route != null && route.animation != null){
+      if (route != null && route.animation != null) {
         route.animation!.addStatusListener(_onAnimationStatusChanged);
-      }else{
+      } else {
         _initializeCamera();
       }
     });
   }
 
-  void _onAnimationStatusChanged(AnimationStatus status){
-    if (status == AnimationStatus.completed && mounted){
+  void _onAnimationStatusChanged(AnimationStatus status) {
+    if (status == AnimationStatus.completed && mounted) {
       final route = ModalRoute.of(context);
       route?.animation?.removeStatusListener(_onAnimationStatusChanged);
 
