@@ -220,15 +220,12 @@ enum Format { isbn, issn }
 
 List<bool Function(String)> acceptedFormatFunction() {
   List<bool Function(String)> list = [];
-  // acceptedSearch will use isISBN13, isISBN10, isISSN etc. from this file (utils.dart)
   for (var type in acceptedSearch) {
     list.add(type[1] as bool Function(String));
   }
   return list;
 }
 
-// searchISBN13, isISBN13, searchISBN10, isISBN10, searchISSN, isISSN
-// are assumed to be defined earlier in this file (utils.dart).
 List<List<dynamic>> acceptedSearch = [
   [searchISBN13, isISBN13],
   [searchISBN10, isISBN10],
@@ -243,16 +240,31 @@ bool isValidFormat(String value) {
 }
 
 Format? getFormat(String value) {
-  // isISBN10, isISBN13, isISSN are from this file (utils.dart)
   if (isISBN10(value) || isISBN13(value)) return Format.isbn;
   if (isISSN(value)) return Format.issn;
   return null;
 }
 
-List<Map<String, String>> sortLibraries(List<Map<String, String>> libraries) {
-  libraries.sort(
-    (a, b) =>
-        a['location']!.toLowerCase().compareTo(b['location']!.toLowerCase()),
-  );
+List<Map<String, String>> sortLibraries(
+  List<Map<String, String>> libraries, {
+  List<String>? priorityRcrList,
+}) {
+  libraries.sort((a, b) {
+    final String locationA = a['location']!.toLowerCase();
+    final String locationB = b['location']!.toLowerCase();
+
+    if (priorityRcrList != null && priorityRcrList.isNotEmpty) {
+      final String rcrA = a['rcr'] ?? '';
+      final String rcrB = b['rcr'] ?? '';
+
+      final bool aInPriority = priorityRcrList.contains(rcrA);
+      final bool bInPriority = priorityRcrList.contains(rcrB);
+
+      if (aInPriority && !bInPriority) return -1;
+      if (!aInPriority && bInPriority) return 1;
+    }
+
+    return locationA.compareTo(locationB);
+  });
   return libraries;
 }

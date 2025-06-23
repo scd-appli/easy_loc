@@ -122,6 +122,7 @@ Future<List<Map<String, dynamic>>> multiwhere(
                           item['longitude']?.toString() ?? '';
                       final String latitude =
                           item['latitude']?.toString() ?? '';
+                      final String rcr = item['rcr']?.toString() ?? '';
 
                       if (shortname.isNotEmpty &&
                           longitude.isNotEmpty &&
@@ -130,6 +131,7 @@ Future<List<Map<String, dynamic>>> multiwhere(
                           'location': shortname,
                           'longitude': longitude,
                           'latitude': latitude,
+                          'rcr': rcr,
                         };
                       }
                     }

@@ -255,11 +255,13 @@ void main() {
                           'shortname': 'Lib A',
                           'longitude': '1.0',
                           'latitude': '2.0',
+                          'rcr': '123456789',
                         },
                         {
                           'shortname': 'Lib B',
                           'longitude': '3.0',
                           'latitude': '4.0',
+                          'rcr': '987654321',
                         },
                       ],
                     },
@@ -278,6 +280,7 @@ void main() {
                         'shortname': 'Lib C',
                         'longitude': '5.0',
                         'latitude': '6.0',
+                        'rcr': '555666777',
                       },
                     },
                   },
@@ -319,13 +322,13 @@ void main() {
 
         final resPpn1 = results.firstWhere((r) => r['ppn'] == 'ppn1');
         expect(resPpn1['libraries'], [
-          {'location': 'Lib A', 'longitude': '1.0', 'latitude': '2.0'},
-          {'location': 'Lib B', 'longitude': '3.0', 'latitude': '4.0'},
+          {'location': 'Lib A', 'longitude': '1.0', 'latitude': '2.0', 'rcr': '123456789'},
+          {'location': 'Lib B', 'longitude': '3.0', 'latitude': '4.0', 'rcr': '987654321'},
         ]);
 
         final resPpn2 = results.firstWhere((r) => r['ppn'] == 'ppn2');
         expect(resPpn2['libraries'], [
-          {'location': 'Lib C', 'longitude': '5.0', 'latitude': '6.0'},
+          {'location': 'Lib C', 'longitude': '5.0', 'latitude': '6.0', 'rcr': '555666777'},
         ]);
 
         final resPpn3 = results.firstWhere((r) => r['ppn'] == 'ppn3');
@@ -356,12 +359,14 @@ void main() {
                             'shortname': 'Lib Valid1',
                             'longitude': '1.0',
                             'latitude': '2.0',
+                            'rcr': '123456789',
                           },
                           "a string instead of a map",
                           {
                             'shortname': 'Lib Valid2',
                             'longitude': '3.0',
                             'latitude': '4.0',
+                            'rcr': '987654321',
                           },
                           null,
                         ],
@@ -382,8 +387,8 @@ void main() {
           );
           expect(results.length, 1);
           expect(results[0]['libraries'], [
-            {'location': 'Lib Valid1', 'longitude': '1.0', 'latitude': '2.0'},
-            {'location': 'Lib Valid2', 'longitude': '3.0', 'latitude': '4.0'},
+            {'location': 'Lib Valid1', 'longitude': '1.0', 'latitude': '2.0', 'rcr': '123456789'},
+            {'location': 'Lib Valid2', 'longitude': '3.0', 'latitude': '4.0', 'rcr': '987654321'},
           ]);
         },
       );
@@ -401,6 +406,7 @@ void main() {
                           'shortname': 'Lib A',
                           'longitude': '1.0',
                           'latitude': '2.0',
+                          'rcr': '111222333',
                         },
                       ],
                     },
@@ -423,6 +429,7 @@ void main() {
                           'shortname': 'Lib C',
                           'longitude': '5.0',
                           'latitude': '6.0',
+                          'rcr': '444555666',
                         },
                       ],
                     },
@@ -452,12 +459,12 @@ void main() {
 
         final resPpn1 = results.firstWhere((r) => r['ppn'] == 'ppn-good1');
         expect(resPpn1['libraries'], [
-          {'location': 'Lib A', 'longitude': '1.0', 'latitude': '2.0'},
+          {'location': 'Lib A', 'longitude': '1.0', 'latitude': '2.0', 'rcr': '111222333'},
         ]);
 
         final resPpn2 = results.firstWhere((r) => r['ppn'] == 'ppn-good2');
         expect(resPpn2['libraries'], [
-          {'location': 'Lib C', 'longitude': '5.0', 'latitude': '6.0'},
+          {'location': 'Lib C', 'longitude': '5.0', 'latitude': '6.0', 'rcr': '444555666'},
         ]);
       });
 

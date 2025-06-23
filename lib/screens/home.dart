@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../functions/utils.dart';
 import '../components/card.dart';
 import '../components/custom_app_bar.dart';
@@ -9,6 +10,7 @@ import '../components/scan_button.dart';
 import '../functions/user_history.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../functions/api.dart';
+import '../functions/rcr.dart';
 
 Future<void> _addHistoryEntryIsolate(Map<String, dynamic> params) async {
   // Extract the token and initialize BackgroundIsolateBinaryMessenger
@@ -30,6 +32,17 @@ class Home extends StatefulWidget {
   @override
   State<Home> createState() => _HomeState();
 }
+
+// Wrapper function for compute
+List<Map<String, String>> _sortLibrariesWrapper(Map<String, dynamic> params) {
+  final List<Map<String, String>> libraries =
+      (params['libraries'] as List<dynamic>).cast<Map<String, String>>();
+  final List<String>? priorityRcrList =
+      (params['priorityRcrList'] as List<dynamic>?)?.cast<String>();
+  
+  return sortLibraries(libraries, priorityRcrList: priorityRcrList);
+}
+
 
 class _HomeState extends State<Home> {
   final TextEditingController _isbnController = TextEditingController();
@@ -73,11 +86,18 @@ class _HomeState extends State<Home> {
             )
             .toList();
 
-    List<Map<String, String>> sortedLibraries = await compute(
-      sortLibraries,
-      allLibraries,
-    );
+    // Get RCR priority list
+    final rcrStorage = RCR_storage(SharedPreferencesAsync());
+    final priorityRcrList = await rcrStorage.get();
 
+    List<Map<String, String>> sortedLibraries = await compute(
+      _sortLibrariesWrapper,
+      {
+        'libraries': allLibraries,
+        'priorityRcrList': priorityRcrList,
+      },
+    );
+    
     List<String> ppnValue =
         ppnList.map((ppn) => ppn['ppn']).cast<String>().toList();
 
