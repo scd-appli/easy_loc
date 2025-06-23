@@ -129,7 +129,7 @@ class _HistoryState extends State<History> {
                 key: ValueKey<String>("${list![index]}_${DateTime.now().millisecondsSinceEpoch}_$index"),
                 onDismissed: (DismissDirection direction) async {
                   final removedIndex = index;
-                  
+
                   setState(() {
                     list!.removeAt(index);
                   });
@@ -137,6 +137,7 @@ class _HistoryState extends State<History> {
                   await _history.delete(index: removedIndex);
                 },
                 child: CustomCard(
+                  fontSize: 17,
                   title: list![index],
                   onTap: () => Navigator.pop(context, list![index]),
                   actions: [
