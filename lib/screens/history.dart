@@ -137,7 +137,7 @@ class _HistoryState extends State<History> {
                   await _history.delete(index: removedIndex);
                 },
                 child: CustomCard(
-                  fontSize: 17,
+                  fontSize: 16,
                   title: list![index],
                   onTap: () => Navigator.pop(context, list![index]),
                   actions: [
