@@ -10,7 +10,7 @@ class CustomCard extends StatelessWidget {
     this.onTap,
     this.actions,
     this.backgroundColor,
-    this.fontSize
+    this.fontSize,
   });
 
   Future<bool> send() {
@@ -48,7 +48,10 @@ class CustomCard extends StatelessWidget {
             child: Flex(
               direction: Axis.horizontal,
               children: [
-                Text(title, style: TextStyle(color: Colors.black, fontSize: fontSize),),
+                Text(
+                  title,
+                  style: TextStyle(color: Colors.black, fontSize: fontSize),
+                ),
                 const Spacer(),
                 if (actions == null || (latitude != null && longitude != null))
                   IconButton(

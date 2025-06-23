@@ -126,14 +126,16 @@ class _HistoryState extends State<History> {
             itemCount: list!.length,
             itemBuilder: (context, index) {
               return Dismissible(
-                key: ValueKey<String>("${list![index]}_${DateTime.now().millisecondsSinceEpoch}_$index"),
+                key: ValueKey<String>(
+                  "${list![index]}_${DateTime.now().millisecondsSinceEpoch}_$index",
+                ),
                 onDismissed: (DismissDirection direction) async {
                   final removedIndex = index;
 
                   setState(() {
                     list!.removeAt(index);
                   });
-                  
+
                   await _history.delete(index: removedIndex);
                 },
                 child: CustomCard(
