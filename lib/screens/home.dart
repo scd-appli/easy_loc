@@ -39,10 +39,13 @@ List<Map<String, String>> _sortLibrariesWrapper(Map<String, dynamic> params) {
       (params['libraries'] as List<dynamic>).cast<Map<String, String>>();
   final List<String>? priorityRcrList =
       (params['priorityRcrList'] as List<dynamic>?)?.cast<String>();
-  
-  return sortLibraries(libraries, priorityRcrList: priorityRcrList);
-}
 
+  return sortLibraries(
+    libraries,
+    priorityRcrList: priorityRcrList,
+    addPriorityFlag: true,
+  );
+}
 
 class _HomeState extends State<Home> {
   final TextEditingController _isbnController = TextEditingController();
@@ -92,12 +95,9 @@ class _HomeState extends State<Home> {
 
     List<Map<String, String>> sortedLibraries = await compute(
       _sortLibrariesWrapper,
-      {
-        'libraries': allLibraries,
-        'priorityRcrList': priorityRcrList,
-      },
+      {'libraries': allLibraries, 'priorityRcrList': priorityRcrList},
     );
-    
+
     List<String> ppnValue =
         ppnList.map((ppn) => ppn['ppn']).cast<String>().toList();
 
@@ -178,6 +178,8 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final Color primaryColor = Theme.of(context).primaryColor;
+
     if (_data == null) {
       // Initial state or after reset
       return GestureDetector(
@@ -268,18 +270,25 @@ class _HomeState extends State<Home> {
                 child: Scrollbar(
                   thumbVisibility: true,
                   interactive: true,
-                  child: ListView(
+                  child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 180.0),
-                    children:
-                        _data!
-                            .map(
-                              (element) => CustomCard(
-                                title: element['location'],
-                                longitude: element['longitude'],
-                                latitude: element['latitude'],
-                              ),
-                            )
-                            .toList(),
+                    itemCount: _data!.length,
+                    itemBuilder: (context, index) {
+                      debugPrint("$index: ${_data![index]}\nconditions: ${_data![index]["priority"] == true}");
+                      if (_data![index]["priority"] == "true") {
+                        return CustomCard(
+                          title: _data![index]['location'],
+                          longitude: _data![index]['longitude'],
+                          latitude: _data![index]['latitude'],
+                          backgroundColor: primaryColor,
+                        );
+                      }
+                      return CustomCard(
+                        title: _data![index]['location'],
+                        longitude: _data![index]['longitude'],
+                        latitude: _data![index]['latitude'],
+                      );
+                    },
                   ),
                 ),
               ),

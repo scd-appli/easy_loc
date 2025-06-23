@@ -248,8 +248,20 @@ Format? getFormat(String value) {
 List<Map<String, String>> sortLibraries(
   List<Map<String, String>> libraries, {
   List<String>? priorityRcrList,
+  bool addPriorityFlag = false,
 }) {
-  libraries.sort((a, b) {
+  List<Map<String, String>> processedLibraries = libraries;
+
+  if (addPriorityFlag) {
+    processedLibraries =
+        libraries.map((lib) {
+          final String rcr = lib['rcr'] ?? '';
+          final bool isPriority = priorityRcrList?.contains(rcr) ?? false;
+          return {...lib, 'priority': isPriority.toString()};
+        }).toList();
+  }
+
+  processedLibraries.sort((a, b) {
     final String locationA = a['location']!.toLowerCase();
     final String locationB = b['location']!.toLowerCase();
 
@@ -266,5 +278,6 @@ List<Map<String, String>> sortLibraries(
 
     return locationA.compareTo(locationB);
   });
-  return libraries;
+
+  return processedLibraries;
 }

@@ -68,7 +68,8 @@ class _RCRState extends State<RCR> {
           builder: (context, setModalState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom, // Handle keyboard
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom, // Handle keyboard
               ),
               child: Container(
                 padding: const EdgeInsets.all(30.0),

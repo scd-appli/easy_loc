@@ -442,14 +442,37 @@ void main() {
 
     test('should sort libraries by RCR priority then alphabetically', () {
       final libraries = <Map<String, String>>[
-        {'location': 'Library C', 'longitude': '0', 'latitude': '0', 'rcr': '123456789'},
-        {'location': 'Library A', 'longitude': '0', 'latitude': '0', 'rcr': '987654321'},
-        {'location': 'Library B', 'longitude': '0', 'latitude': '0', 'rcr': '555666777'},
-        {'location': 'Library D', 'longitude': '0', 'latitude': '0', 'rcr': '111222333'},
+        {
+          'location': 'Library C',
+          'longitude': '0',
+          'latitude': '0',
+          'rcr': '123456789',
+        },
+        {
+          'location': 'Library A',
+          'longitude': '0',
+          'latitude': '0',
+          'rcr': '987654321',
+        },
+        {
+          'location': 'Library B',
+          'longitude': '0',
+          'latitude': '0',
+          'rcr': '555666777',
+        },
+        {
+          'location': 'Library D',
+          'longitude': '0',
+          'latitude': '0',
+          'rcr': '111222333',
+        },
       ];
       final priorityRcrList = ['123456789', '111222333'];
-      final sortedLibraries = sortLibraries(libraries, priorityRcrList: priorityRcrList);
-      
+      final sortedLibraries = sortLibraries(
+        libraries,
+        priorityRcrList: priorityRcrList,
+      );
+
       // Priority RCR libraries should come first (alphabetically sorted)
       // Then non-priority libraries (alphabetically sorted)
       expect(
@@ -460,9 +483,24 @@ void main() {
 
     test('should handle empty RCR priority list', () {
       final libraries = <Map<String, String>>[
-        {'location': 'Library C', 'longitude': '0', 'latitude': '0', 'rcr': '123456789'},
-        {'location': 'Library A', 'longitude': '0', 'latitude': '0', 'rcr': '987654321'},
-        {'location': 'Library B', 'longitude': '0', 'latitude': '0', 'rcr': '555666777'},
+        {
+          'location': 'Library C',
+          'longitude': '0',
+          'latitude': '0',
+          'rcr': '123456789',
+        },
+        {
+          'location': 'Library A',
+          'longitude': '0',
+          'latitude': '0',
+          'rcr': '987654321',
+        },
+        {
+          'location': 'Library B',
+          'longitude': '0',
+          'latitude': '0',
+          'rcr': '555666777',
+        },
       ];
       final sortedLibraries = sortLibraries(libraries, priorityRcrList: []);
       expect(
@@ -474,12 +512,20 @@ void main() {
     test('should handle missing RCR fields', () {
       final libraries = <Map<String, String>>[
         {'location': 'Library C', 'longitude': '0', 'latitude': '0'},
-        {'location': 'Library A', 'longitude': '0', 'latitude': '0', 'rcr': '123456789'},
+        {
+          'location': 'Library A',
+          'longitude': '0',
+          'latitude': '0',
+          'rcr': '123456789',
+        },
         {'location': 'Library B', 'longitude': '0', 'latitude': '0', 'rcr': ''},
       ];
       final priorityRcrList = ['123456789'];
-      final sortedLibraries = sortLibraries(libraries, priorityRcrList: priorityRcrList);
-      
+      final sortedLibraries = sortLibraries(
+        libraries,
+        priorityRcrList: priorityRcrList,
+      );
+
       // Library A (with priority RCR) should come first
       expect(
         sortedLibraries.map((lib) => lib['location']),
