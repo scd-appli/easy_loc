@@ -174,13 +174,14 @@ class _RCRState extends State<RCR> {
                 itemCount: rcrList!.length,
                 itemBuilder: (context, index) {
                   return Dismissible(
-                    background: Container(color: Colors.red[500]),
                     key: ValueKey<String>(rcrList![index]),
                     onDismissed: (direction) async {
+                      final removedIndex = index;
+
                       setState(() {
                         rcrList!.removeAt(index);
                       });
-                      await rcrStorage.delete(index);
+                      await rcrStorage.delete(removedIndex);
                     },
                     child: ListTile(
                       title: Row(

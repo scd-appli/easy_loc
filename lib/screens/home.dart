@@ -268,13 +268,11 @@ class _HomeState extends State<Home> {
               ),
               Expanded(
                 child: Scrollbar(
-                  thumbVisibility: true,
                   interactive: true,
                   child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 180.0),
                     itemCount: _data!.length,
                     itemBuilder: (context, index) {
-                      debugPrint("$index: ${_data![index]}\nconditions: ${_data![index]["priority"] == true}");
                       if (_data![index]["priority"] == "true") {
                         return CustomCard(
                           title: _data![index]['location'],

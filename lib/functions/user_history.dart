@@ -178,7 +178,7 @@ class UserHistory {
     }
   }
 
-  Future<void> delete({required int index, required String isbn}) async {
+  Future<void> delete({required int index}) async {
     Map<String, List<List<String>>>? list = await get();
 
     if (list == null ||

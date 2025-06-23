@@ -119,27 +119,39 @@ class _HistoryState extends State<History> {
       ),
       body: RefreshIndicator(
         onRefresh: () => _sync(),
-        child: ListView(
-          padding: const EdgeInsets.all(8),
-          children:
-              list!.asMap().entries.map((element) {
-                return CustomCard(
-                  title: element.value,
-                  onTap: () => Navigator.pop(context, element.value),
+        child: Scrollbar(
+          interactive: true,
+          child: ListView.builder(
+            padding: const EdgeInsets.all(8),
+            itemCount: list!.length,
+            itemBuilder: (context, index) {
+              return Dismissible(
+                key: ValueKey<String>("${list![index]}_${DateTime.now().millisecondsSinceEpoch}_$index"),
+                onDismissed: (DismissDirection direction) async {
+                  final removedIndex = index;
+                  
+                  setState(() {
+                    list!.removeAt(index);
+                  });
+                  
+                  await _history.delete(index: removedIndex);
+                },
+                child: CustomCard(
+                  title: list![index],
+                  onTap: () => Navigator.pop(context, list![index]),
                   actions: [
                     IconButton(
                       onPressed: () async {
-                        await _history.delete(
-                          index: element.key,
-                          isbn: element.value,
-                        );
+                        await _history.delete(index: index);
                         await _sync();
                       },
                       icon: Icon(Icons.delete, color: Colors.red[300]),
                     ),
                   ],
-                );
-              }).toList(),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
