@@ -56,7 +56,6 @@ class DisplayLanguage {
     return getEffectiveLocale();
   }
 
-  // Convert int from storage to SupportedLanguages enum
   static SupportedLanguages intToSupportedLanguage(int n) {
     switch (n) {
       case 1:
@@ -69,7 +68,6 @@ class DisplayLanguage {
     }
   }
 
-  // Convert SupportedLanguages enum to int for storage
   static int supportedLanguageToInt(SupportedLanguages lang) {
     switch (lang) {
       case SupportedLanguages.system:
@@ -81,7 +79,6 @@ class DisplayLanguage {
     }
   }
 
-  // Convert SupportedLanguages enum to display string
   static String supportedLanguagesToString(
     BuildContext context,
     SupportedLanguages lang,

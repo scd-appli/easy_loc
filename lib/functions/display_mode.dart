@@ -1,7 +1,7 @@
 import 'package:easy_loc/main.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Re-added for localization
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Mode {
   final String key = "mode";
@@ -23,8 +23,6 @@ class Mode {
 
     if (n == null || n < 0 || n >= ThemeMode.values.length) {
       _mode = ThemeMode.system;
-      // Optionally, save the default back to SharedPreferences if it was null or invalid
-      // await sharred.setInt(key, _mode.index);
       return _mode;
     }
 

@@ -33,5 +33,11 @@
     "permissionDenied":"Permission denied",
     "saveCancelledUser":"Saving cancelled",
     "shareCancelledUser":"Sharing cancelled",
-    "fileShared":"File shared"
+    "fileShared":"File shared",
+    "rcrList":"RCR list",
+    "rcrListEmpty":"You havent specified any RCR",
+    "add":"Add",
+    "rcr": "RCR",
+    "mustBe9Digit":"Must be 9 digits",
+    "alreadyRcr":"The RCR is in the list"
 }

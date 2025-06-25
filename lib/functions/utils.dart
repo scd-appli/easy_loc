@@ -44,6 +44,24 @@ extension StringExtensions on String {
 }
 
 extension Csv on List<List> {
+  /// Returns a new list containing the elements at the specified [index]
+  /// from each sublist in the current list.
+  ///
+  /// Assumes that the current object is a list of lists, and each sublist
+  /// contains at least [index] elements.
+  ///
+  /// Example:
+  /// ```dart
+  /// var matrix = [
+  ///   [1, 2, 3],
+  ///   [4, 5, 6],
+  ///   [7, 8, 9]
+  /// ];
+  /// var column = matrix.getOnlyIndex(1); // Returns [2, 5, 8]
+  /// ```
+  ///
+  /// [index]: The index of the element to extract from each sublist.
+  /// Returns a list of elements at the specified [index] from each sublist.
   List getOnlyIndex(int index) {
     List list = [];
     for (var row in this) {
@@ -220,15 +238,12 @@ enum Format { isbn, issn }
 
 List<bool Function(String)> acceptedFormatFunction() {
   List<bool Function(String)> list = [];
-  // acceptedSearch will use isISBN13, isISBN10, isISSN etc. from this file (utils.dart)
   for (var type in acceptedSearch) {
     list.add(type[1] as bool Function(String));
   }
   return list;
 }
 
-// searchISBN13, isISBN13, searchISBN10, isISBN10, searchISSN, isISSN
-// are assumed to be defined earlier in this file (utils.dart).
 List<List<dynamic>> acceptedSearch = [
   [searchISBN13, isISBN13],
   [searchISBN10, isISBN10],
@@ -243,16 +258,44 @@ bool isValidFormat(String value) {
 }
 
 Format? getFormat(String value) {
-  // isISBN10, isISBN13, isISSN are from this file (utils.dart)
   if (isISBN10(value) || isISBN13(value)) return Format.isbn;
   if (isISSN(value)) return Format.issn;
   return null;
 }
 
-List<Map<String, String>> sortLibraries(List<Map<String, String>> libraries) {
-  libraries.sort(
-    (a, b) =>
-        a['location']!.toLowerCase().compareTo(b['location']!.toLowerCase()),
-  );
-  return libraries;
+List<Map<String, String>> sortLibraries(
+  List<Map<String, String>> libraries, {
+  List<String>? priorityRcrList,
+  bool addPriorityFlag = false,
+}) {
+  List<Map<String, String>> processedLibraries = libraries;
+
+  if (addPriorityFlag) {
+    processedLibraries =
+        libraries.map((lib) {
+          final String rcr = lib['rcr'] ?? '';
+          final bool isPriority = priorityRcrList?.contains(rcr) ?? false;
+          return {...lib, 'priority': isPriority.toString()};
+        }).toList();
+  }
+
+  processedLibraries.sort((a, b) {
+    final String locationA = a['location']!.toLowerCase();
+    final String locationB = b['location']!.toLowerCase();
+
+    if (priorityRcrList != null && priorityRcrList.isNotEmpty) {
+      final String rcrA = a['rcr'] ?? '';
+      final String rcrB = b['rcr'] ?? '';
+
+      final bool aInPriority = priorityRcrList.contains(rcrA);
+      final bool bInPriority = priorityRcrList.contains(rcrB);
+
+      if (aInPriority && !bInPriority) return -1;
+      if (!aInPriority && bInPriority) return 1;
+    }
+
+    return locationA.compareTo(locationB);
+  });
+
+  return processedLibraries;
 }
