@@ -609,7 +609,7 @@ void main() {
 
     group('unimarc', () {
       test(
-        'parses XML response and extracts datafield 200 subfields',
+        'parses XML response and extracts datafield 200 and 214 subfields',
         () async {
           mockClient = MockClient((request) async {
             expect(request.url.toString(), '${unimarcEndpoint}test-ppn.xml');
@@ -624,6 +624,11 @@ void main() {
     <subfield code="a">Title B</subfield>
     <subfield code="e">Edition B</subfield>
   </datafield>
+  <datafield tag="214" ind1=" " ind2=" ">
+    <subfield code="b">Pub Name</subfield>
+    <subfield code="c">Pub Location</subfield>
+    <subfield code="d">Pub Date</subfield>
+  </datafield>
   <datafield tag="300" ind1=" " ind2=" ">
     <subfield code="a">This should be ignored</subfield>
   </datafield>
@@ -633,10 +638,13 @@ void main() {
           final result = await unimarc('test-ppn', client: mockClient);
 
           expect(result, {
-            'a': ['Title A', 'Title B'],
-            'c': ['Author A'],
-            'd': ['Publisher A'],
-            'e': ['Edition B'],
+            '200/a': ['Title A', 'Title B'],
+            '200/c': ['Author A'],
+            '200/d': ['Publisher A'],
+            '200/e': ['Edition B'],
+            '214/b': ['Pub Name'],
+            '214/c': ['Pub Location'],
+            '214/d': ['Pub Date'],
           });
         },
       );
@@ -653,9 +661,12 @@ void main() {
         expect(result, {});
       });
 
-      test('handles XML with no datafield 200', () async {
+      test('handles XML with no datafield 200 or 214', () async {
         mockClient = MockClient((request) async {
-          expect(request.url.toString(), '${unimarcEndpoint}no-200-ppn.xml');
+          expect(
+            request.url.toString(),
+            '${unimarcEndpoint}no-200-214-ppn.xml',
+          );
           return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
 <record>
   <datafield tag="300" ind1=" " ind2=" ">
@@ -664,8 +675,42 @@ void main() {
 </record>''', 200);
         });
 
-        final result = await unimarc('no-200-ppn', client: mockClient);
+        final result = await unimarc('no-200-214-ppn', client: mockClient);
         expect(result, {});
+      });
+
+      test('handles XML with only datafield 200', () async {
+        mockClient = MockClient((request) async {
+          expect(request.url.toString(), '${unimarcEndpoint}only-200-ppn.xml');
+          return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<record>
+  <datafield tag="200" ind1=" " ind2=" ">
+    <subfield code="a">Title Only</subfield>
+  </datafield>
+</record>''', 200);
+        });
+
+        final result = await unimarc('only-200-ppn', client: mockClient);
+        expect(result, {
+          '200/a': ['Title Only'],
+        });
+      });
+
+      test('handles XML with only datafield 214', () async {
+        mockClient = MockClient((request) async {
+          expect(request.url.toString(), '${unimarcEndpoint}only-214-ppn.xml');
+          return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<record>
+  <datafield tag="214" ind1=" " ind2=" ">
+    <subfield code="b">Publisher Only</subfield>
+  </datafield>
+</record>''', 200);
+        });
+
+        final result = await unimarc('only-214-ppn', client: mockClient);
+        expect(result, {
+          '214/b': ['Publisher Only'],
+        });
       });
 
       test('filters out empty subfield text', () async {
@@ -681,13 +726,18 @@ void main() {
     <subfield code="b"></subfield>
     <subfield code="c">Another Valid Text</subfield>
   </datafield>
+  <datafield tag="214" ind1=" " ind2=" ">
+    <subfield code="b">Valid Publisher</subfield>
+    <subfield code="c"></subfield>
+  </datafield>
 </record>''', 200);
         });
 
         final result = await unimarc('empty-text-ppn', client: mockClient);
         expect(result, {
-          'a': ['Valid Text'],
-          'c': ['Another Valid Text'],
+          '200/a': ['Valid Text'],
+          '200/c': ['Another Valid Text'],
+          '214/b': ['Valid Publisher'],
         });
       });
 
