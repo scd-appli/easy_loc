@@ -605,6 +605,184 @@ void main() {
         expect(results.length, 1);
         expect(results[0]['libraries'], isEmpty);
       });
+
+      test('handles duplicate libraries across different PPNs', () async {
+        mockClient = MockClient((request) async {
+          if (request.url.toString() == '${multiwhereEndpoint}ppn1') {
+            return http.Response(
+              jsonEncode({
+                'sudoc': {
+                  'query': {
+                    'result': {
+                      'library': [
+                        {
+                          'shortname': 'Lib A',
+                          'longitude': '1.0',
+                          'latitude': '2.0',
+                          'rcr': '123456789',
+                        },
+                        {
+                          'shortname': 'Lib B',
+                          'longitude': '3.0',
+                          'latitude': '4.0',
+                          'rcr': '987654321',
+                        },
+                      ],
+                    },
+                  },
+                },
+              }),
+              200,
+            );
+          } else if (request.url.toString() == '${multiwhereEndpoint}ppn2') {
+            return http.Response(
+              jsonEncode({
+                'sudoc': {
+                  'query': {
+                    'result': {
+                      'library': [
+                        {
+                          'shortname': 'Lib A', // Same library as in ppn1
+                          'longitude': '1.0',
+                          'latitude': '2.0',
+                          'rcr': '123456789',
+                        },
+                        {
+                          'shortname': 'Lib C', // New library
+                          'longitude': '5.0',
+                          'latitude': '6.0',
+                          'rcr': '555666777',
+                        },
+                      ],
+                    },
+                  },
+                },
+              }),
+              200,
+            );
+          }
+          return http.Response('Not Found', 404);
+        });
+
+        final ppnList = [
+          {'ppn': 'ppn1'},
+          {'ppn': 'ppn2'},
+        ];
+        final results = await multiwhere(
+          ppnList.cast<Map<String, String>>(),
+          client: mockClient,
+        );
+
+        // Should have 2 PPN results
+        expect(results.length, 2);
+
+        // Collect all libraries from all results
+        final allLibraries = <Map<String, String>>[];
+        for (final result in results) {
+          final libraries = result['libraries'] as List<Map<String, String>>;
+          allLibraries.addAll(libraries);
+        }
+
+        // Should only have 3 unique libraries (Lib A should not be duplicated)
+        expect(allLibraries.length, 3);
+
+        // Verify the unique libraries
+        final libraryRcrs = allLibraries.map((lib) => lib['rcr']).toSet();
+        expect(libraryRcrs, {'123456789', '987654321', '555666777'});
+
+        // Verify Lib A appears only once
+        final libACount =
+            allLibraries.where((lib) => lib['rcr'] == '123456789').length;
+        expect(libACount, 1);
+      });
+
+      test(
+        'handles duplicate libraries without RCR (using location+coordinates)',
+        () async {
+          mockClient = MockClient((request) async {
+            if (request.url.toString() == '${multiwhereEndpoint}ppn1') {
+              return http.Response(
+                jsonEncode({
+                  'sudoc': {
+                    'query': {
+                      'result': {
+                        'library': [
+                          {
+                            'shortname': 'Lib Without RCR',
+                            'longitude': '1.0',
+                            'latitude': '2.0',
+                            'rcr': '', // Empty RCR
+                          },
+                        ],
+                      },
+                    },
+                  },
+                }),
+                200,
+              );
+            } else if (request.url.toString() == '${multiwhereEndpoint}ppn2') {
+              return http.Response(
+                jsonEncode({
+                  'sudoc': {
+                    'query': {
+                      'result': {
+                        'library': [
+                          {
+                            'shortname': 'Lib Without RCR', // Same library
+                            'longitude': '1.0',
+                            'latitude': '2.0',
+                            'rcr': '', // Empty RCR
+                          },
+                          {
+                            'shortname': 'Different Lib',
+                            'longitude': '3.0',
+                            'latitude': '4.0',
+                            'rcr': '', // Empty RCR but different location
+                          },
+                        ],
+                      },
+                    },
+                  },
+                }),
+                200,
+              );
+            }
+            return http.Response('Not Found', 404);
+          });
+
+          final ppnList = [
+            {'ppn': 'ppn1'},
+            {'ppn': 'ppn2'},
+          ];
+          final results = await multiwhere(
+            ppnList.cast<Map<String, String>>(),
+            client: mockClient,
+          );
+
+          // Collect all libraries from all results
+          final allLibraries = <Map<String, String>>[];
+          for (final result in results) {
+            final libraries = result['libraries'] as List<Map<String, String>>;
+            allLibraries.addAll(libraries);
+          }
+
+          // Should only have 2 unique libraries (duplicate "Lib Without RCR" filtered out)
+          expect(allLibraries.length, 2);
+
+          // Verify we have the two different libraries
+          final libraryKeys =
+              allLibraries
+                  .map(
+                    (lib) =>
+                        '${lib['location']}_${lib['longitude']}_${lib['latitude']}',
+                  )
+                  .toSet();
+          expect(libraryKeys, {
+            'Lib Without RCR_1.0_2.0',
+            'Different Lib_3.0_4.0',
+          });
+        },
+      );
     });
 
     group('unimarc', () {

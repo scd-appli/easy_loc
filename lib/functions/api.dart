@@ -89,6 +89,7 @@ Future<List<Map<String, dynamic>>> multiwhere(
   http.Client? client,
 }) async {
   List<Map<String, dynamic>> results = [];
+  Set<String> seenLibraries = <String>{};
 
   await Future.wait(
     ppnList.map((ppnMap) async {
@@ -127,12 +128,22 @@ Future<List<Map<String, dynamic>>> multiwhere(
                       if (shortname.isNotEmpty &&
                           longitude.isNotEmpty &&
                           latitude.isNotEmpty) {
-                        return {
-                          'location': shortname,
-                          'longitude': longitude,
-                          'latitude': latitude,
-                          'rcr': rcr,
-                        };
+                        // Create a unique key for this library
+                        final String libraryKey =
+                            rcr.isNotEmpty
+                                ? rcr
+                                : '${shortname}_${longitude}_$latitude';
+
+                        // handle doublons
+                        if (!seenLibraries.contains(libraryKey)) {
+                          seenLibraries.add(libraryKey);
+                          return {
+                            'location': shortname,
+                            'longitude': longitude,
+                            'latitude': latitude,
+                            'rcr': rcr,
+                          };
+                        }
                       }
                     }
                     return null; // Return null for invalid or incomplete items
