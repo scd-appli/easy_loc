@@ -142,7 +142,6 @@ class _RCRState extends State<RCR> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 0),
                   ],
                 ),
               ),

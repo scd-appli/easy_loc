@@ -44,6 +44,24 @@ extension StringExtensions on String {
 }
 
 extension Csv on List<List> {
+  /// Returns a new list containing the elements at the specified [index]
+  /// from each sublist in the current list.
+  ///
+  /// Assumes that the current object is a list of lists, and each sublist
+  /// contains at least [index] elements.
+  ///
+  /// Example:
+  /// ```dart
+  /// var matrix = [
+  ///   [1, 2, 3],
+  ///   [4, 5, 6],
+  ///   [7, 8, 9]
+  /// ];
+  /// var column = matrix.getOnlyIndex(1); // Returns [2, 5, 8]
+  /// ```
+  ///
+  /// [index]: The index of the element to extract from each sublist.
+  /// Returns a list of elements at the specified [index] from each sublist.
   List getOnlyIndex(int index) {
     List list = [];
     for (var row in this) {
