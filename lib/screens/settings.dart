@@ -172,6 +172,20 @@ class _SettingsState extends State<Settings> {
                     ),
                   ],
                 ),
+                SizedBox(height: 20),
+                Row(
+                  children: [
+                    Text(l10n.rcrList, style: TextStyle(fontSize: 17)),
+                    Spacer(),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/settings/rcr');
+                      },
+                      icon: Icon(Icons.arrow_circle_right_outlined, size: 50),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ],
+                ),
                 const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -6,13 +6,13 @@ import 'package:permission_handler/permission_handler.dart';
 
 Future<bool> grantAccess() async {
   if (Platform.isAndroid) {
-    return await grantAccessAndroid();
+    return await _grantAccessAndroid();
   }
 
   return true;
 }
 
-Future<bool> grantAccessAndroid() async {
+Future<bool> _grantAccessAndroid() async {
   bool permissionGranted = false;
 
   final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -33,7 +33,7 @@ Future<bool> grantAccessAndroid() async {
       permissionGranted = true;
     }
   } else {
-    // Android 10 (API 29) or older (down to your minSdk)
+    // Android 10 (API 29) or older
     PermissionStatus status = await Permission.storage.status;
     debugPrint("Android 10 or older: Initial storage status: $status");
     if (!status.isGranted) {

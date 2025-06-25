@@ -255,11 +255,13 @@ void main() {
                           'shortname': 'Lib A',
                           'longitude': '1.0',
                           'latitude': '2.0',
+                          'rcr': '123456789',
                         },
                         {
                           'shortname': 'Lib B',
                           'longitude': '3.0',
                           'latitude': '4.0',
+                          'rcr': '987654321',
                         },
                       ],
                     },
@@ -278,6 +280,7 @@ void main() {
                         'shortname': 'Lib C',
                         'longitude': '5.0',
                         'latitude': '6.0',
+                        'rcr': '555666777',
                       },
                     },
                   },
@@ -319,13 +322,28 @@ void main() {
 
         final resPpn1 = results.firstWhere((r) => r['ppn'] == 'ppn1');
         expect(resPpn1['libraries'], [
-          {'location': 'Lib A', 'longitude': '1.0', 'latitude': '2.0'},
-          {'location': 'Lib B', 'longitude': '3.0', 'latitude': '4.0'},
+          {
+            'location': 'Lib A',
+            'longitude': '1.0',
+            'latitude': '2.0',
+            'rcr': '123456789',
+          },
+          {
+            'location': 'Lib B',
+            'longitude': '3.0',
+            'latitude': '4.0',
+            'rcr': '987654321',
+          },
         ]);
 
         final resPpn2 = results.firstWhere((r) => r['ppn'] == 'ppn2');
         expect(resPpn2['libraries'], [
-          {'location': 'Lib C', 'longitude': '5.0', 'latitude': '6.0'},
+          {
+            'location': 'Lib C',
+            'longitude': '5.0',
+            'latitude': '6.0',
+            'rcr': '555666777',
+          },
         ]);
 
         final resPpn3 = results.firstWhere((r) => r['ppn'] == 'ppn3');
@@ -356,12 +374,14 @@ void main() {
                             'shortname': 'Lib Valid1',
                             'longitude': '1.0',
                             'latitude': '2.0',
+                            'rcr': '123456789',
                           },
                           "a string instead of a map",
                           {
                             'shortname': 'Lib Valid2',
                             'longitude': '3.0',
                             'latitude': '4.0',
+                            'rcr': '987654321',
                           },
                           null,
                         ],
@@ -382,8 +402,18 @@ void main() {
           );
           expect(results.length, 1);
           expect(results[0]['libraries'], [
-            {'location': 'Lib Valid1', 'longitude': '1.0', 'latitude': '2.0'},
-            {'location': 'Lib Valid2', 'longitude': '3.0', 'latitude': '4.0'},
+            {
+              'location': 'Lib Valid1',
+              'longitude': '1.0',
+              'latitude': '2.0',
+              'rcr': '123456789',
+            },
+            {
+              'location': 'Lib Valid2',
+              'longitude': '3.0',
+              'latitude': '4.0',
+              'rcr': '987654321',
+            },
           ]);
         },
       );
@@ -401,6 +431,7 @@ void main() {
                           'shortname': 'Lib A',
                           'longitude': '1.0',
                           'latitude': '2.0',
+                          'rcr': '111222333',
                         },
                       ],
                     },
@@ -423,6 +454,7 @@ void main() {
                           'shortname': 'Lib C',
                           'longitude': '5.0',
                           'latitude': '6.0',
+                          'rcr': '444555666',
                         },
                       ],
                     },
@@ -452,12 +484,22 @@ void main() {
 
         final resPpn1 = results.firstWhere((r) => r['ppn'] == 'ppn-good1');
         expect(resPpn1['libraries'], [
-          {'location': 'Lib A', 'longitude': '1.0', 'latitude': '2.0'},
+          {
+            'location': 'Lib A',
+            'longitude': '1.0',
+            'latitude': '2.0',
+            'rcr': '111222333',
+          },
         ]);
 
         final resPpn2 = results.firstWhere((r) => r['ppn'] == 'ppn-good2');
         expect(resPpn2['libraries'], [
-          {'location': 'Lib C', 'longitude': '5.0', 'latitude': '6.0'},
+          {
+            'location': 'Lib C',
+            'longitude': '5.0',
+            'latitude': '6.0',
+            'rcr': '444555666',
+          },
         ]);
       });
 
@@ -563,11 +605,189 @@ void main() {
         expect(results.length, 1);
         expect(results[0]['libraries'], isEmpty);
       });
+
+      test('handles duplicate libraries across different PPNs', () async {
+        mockClient = MockClient((request) async {
+          if (request.url.toString() == '${multiwhereEndpoint}ppn1') {
+            return http.Response(
+              jsonEncode({
+                'sudoc': {
+                  'query': {
+                    'result': {
+                      'library': [
+                        {
+                          'shortname': 'Lib A',
+                          'longitude': '1.0',
+                          'latitude': '2.0',
+                          'rcr': '123456789',
+                        },
+                        {
+                          'shortname': 'Lib B',
+                          'longitude': '3.0',
+                          'latitude': '4.0',
+                          'rcr': '987654321',
+                        },
+                      ],
+                    },
+                  },
+                },
+              }),
+              200,
+            );
+          } else if (request.url.toString() == '${multiwhereEndpoint}ppn2') {
+            return http.Response(
+              jsonEncode({
+                'sudoc': {
+                  'query': {
+                    'result': {
+                      'library': [
+                        {
+                          'shortname': 'Lib A', // Same library as in ppn1
+                          'longitude': '1.0',
+                          'latitude': '2.0',
+                          'rcr': '123456789',
+                        },
+                        {
+                          'shortname': 'Lib C', // New library
+                          'longitude': '5.0',
+                          'latitude': '6.0',
+                          'rcr': '555666777',
+                        },
+                      ],
+                    },
+                  },
+                },
+              }),
+              200,
+            );
+          }
+          return http.Response('Not Found', 404);
+        });
+
+        final ppnList = [
+          {'ppn': 'ppn1'},
+          {'ppn': 'ppn2'},
+        ];
+        final results = await multiwhere(
+          ppnList.cast<Map<String, String>>(),
+          client: mockClient,
+        );
+
+        // Should have 2 PPN results
+        expect(results.length, 2);
+
+        // Collect all libraries from all results
+        final allLibraries = <Map<String, String>>[];
+        for (final result in results) {
+          final libraries = result['libraries'] as List<Map<String, String>>;
+          allLibraries.addAll(libraries);
+        }
+
+        // Should only have 3 unique libraries (Lib A should not be duplicated)
+        expect(allLibraries.length, 3);
+
+        // Verify the unique libraries
+        final libraryRcrs = allLibraries.map((lib) => lib['rcr']).toSet();
+        expect(libraryRcrs, {'123456789', '987654321', '555666777'});
+
+        // Verify Lib A appears only once
+        final libACount =
+            allLibraries.where((lib) => lib['rcr'] == '123456789').length;
+        expect(libACount, 1);
+      });
+
+      test(
+        'handles duplicate libraries without RCR (using location+coordinates)',
+        () async {
+          mockClient = MockClient((request) async {
+            if (request.url.toString() == '${multiwhereEndpoint}ppn1') {
+              return http.Response(
+                jsonEncode({
+                  'sudoc': {
+                    'query': {
+                      'result': {
+                        'library': [
+                          {
+                            'shortname': 'Lib Without RCR',
+                            'longitude': '1.0',
+                            'latitude': '2.0',
+                            'rcr': '', // Empty RCR
+                          },
+                        ],
+                      },
+                    },
+                  },
+                }),
+                200,
+              );
+            } else if (request.url.toString() == '${multiwhereEndpoint}ppn2') {
+              return http.Response(
+                jsonEncode({
+                  'sudoc': {
+                    'query': {
+                      'result': {
+                        'library': [
+                          {
+                            'shortname': 'Lib Without RCR', // Same library
+                            'longitude': '1.0',
+                            'latitude': '2.0',
+                            'rcr': '', // Empty RCR
+                          },
+                          {
+                            'shortname': 'Different Lib',
+                            'longitude': '3.0',
+                            'latitude': '4.0',
+                            'rcr': '', // Empty RCR but different location
+                          },
+                        ],
+                      },
+                    },
+                  },
+                }),
+                200,
+              );
+            }
+            return http.Response('Not Found', 404);
+          });
+
+          final ppnList = [
+            {'ppn': 'ppn1'},
+            {'ppn': 'ppn2'},
+          ];
+          final results = await multiwhere(
+            ppnList.cast<Map<String, String>>(),
+            client: mockClient,
+          );
+
+          // Collect all libraries from all results
+          final allLibraries = <Map<String, String>>[];
+          for (final result in results) {
+            final libraries = result['libraries'] as List<Map<String, String>>;
+            allLibraries.addAll(libraries);
+          }
+
+          // Should only have 2 unique libraries (duplicate "Lib Without RCR" filtered out)
+          expect(allLibraries.length, 2);
+
+          // Verify we have the two different libraries
+          final libraryKeys =
+              allLibraries
+                  .map(
+                    (lib) =>
+                        '${lib['location']}_${lib['longitude']}_${lib['latitude']}',
+                  )
+                  .toSet();
+          expect(libraryKeys, {
+            'Lib Without RCR_1.0_2.0',
+            'Different Lib_3.0_4.0',
+          });
+        },
+      );
     });
 
     group('unimarc', () {
       test(
-        'parses XML response and extracts datafield 200 subfields',
+        'parses XML response and extracts datafield 200 and 214 subfields',
         () async {
           mockClient = MockClient((request) async {
             expect(request.url.toString(), '${unimarcEndpoint}test-ppn.xml');
@@ -582,6 +802,11 @@ void main() {
     <subfield code="a">Title B</subfield>
     <subfield code="e">Edition B</subfield>
   </datafield>
+  <datafield tag="214" ind1=" " ind2=" ">
+    <subfield code="b">Pub Name</subfield>
+    <subfield code="c">Pub Location</subfield>
+    <subfield code="d">Pub Date</subfield>
+  </datafield>
   <datafield tag="300" ind1=" " ind2=" ">
     <subfield code="a">This should be ignored</subfield>
   </datafield>
@@ -591,10 +816,13 @@ void main() {
           final result = await unimarc('test-ppn', client: mockClient);
 
           expect(result, {
-            'a': ['Title A', 'Title B'],
-            'c': ['Author A'],
-            'd': ['Publisher A'],
-            'e': ['Edition B'],
+            '200/a': ['Title A', 'Title B'],
+            '200/c': ['Author A'],
+            '200/d': ['Publisher A'],
+            '200/e': ['Edition B'],
+            '214/b': ['Pub Name'],
+            '214/c': ['Pub Location'],
+            '214/d': ['Pub Date'],
           });
         },
       );
@@ -611,9 +839,12 @@ void main() {
         expect(result, {});
       });
 
-      test('handles XML with no datafield 200', () async {
+      test('handles XML with no datafield 200 or 214', () async {
         mockClient = MockClient((request) async {
-          expect(request.url.toString(), '${unimarcEndpoint}no-200-ppn.xml');
+          expect(
+            request.url.toString(),
+            '${unimarcEndpoint}no-200-214-ppn.xml',
+          );
           return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
 <record>
   <datafield tag="300" ind1=" " ind2=" ">
@@ -622,8 +853,42 @@ void main() {
 </record>''', 200);
         });
 
-        final result = await unimarc('no-200-ppn', client: mockClient);
+        final result = await unimarc('no-200-214-ppn', client: mockClient);
         expect(result, {});
+      });
+
+      test('handles XML with only datafield 200', () async {
+        mockClient = MockClient((request) async {
+          expect(request.url.toString(), '${unimarcEndpoint}only-200-ppn.xml');
+          return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<record>
+  <datafield tag="200" ind1=" " ind2=" ">
+    <subfield code="a">Title Only</subfield>
+  </datafield>
+</record>''', 200);
+        });
+
+        final result = await unimarc('only-200-ppn', client: mockClient);
+        expect(result, {
+          '200/a': ['Title Only'],
+        });
+      });
+
+      test('handles XML with only datafield 214', () async {
+        mockClient = MockClient((request) async {
+          expect(request.url.toString(), '${unimarcEndpoint}only-214-ppn.xml');
+          return http.Response('''<?xml version="1.0" encoding="UTF-8"?>
+<record>
+  <datafield tag="214" ind1=" " ind2=" ">
+    <subfield code="b">Publisher Only</subfield>
+  </datafield>
+</record>''', 200);
+        });
+
+        final result = await unimarc('only-214-ppn', client: mockClient);
+        expect(result, {
+          '214/b': ['Publisher Only'],
+        });
       });
 
       test('filters out empty subfield text', () async {
@@ -639,13 +904,18 @@ void main() {
     <subfield code="b"></subfield>
     <subfield code="c">Another Valid Text</subfield>
   </datafield>
+  <datafield tag="214" ind1=" " ind2=" ">
+    <subfield code="b">Valid Publisher</subfield>
+    <subfield code="c"></subfield>
+  </datafield>
 </record>''', 200);
         });
 
         final result = await unimarc('empty-text-ppn', client: mockClient);
         expect(result, {
-          'a': ['Valid Text'],
-          'c': ['Another Valid Text'],
+          '200/a': ['Valid Text'],
+          '200/c': ['Another Valid Text'],
+          '214/b': ['Valid Publisher'],
         });
       });
 

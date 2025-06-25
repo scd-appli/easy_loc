@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../functions/utils.dart';
 import '../components/card.dart';
 import '../components/custom_app_bar.dart';
@@ -9,6 +10,7 @@ import '../components/scan_button.dart';
 import '../functions/user_history.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../functions/api.dart';
+import '../functions/rcr.dart';
 
 Future<void> _addHistoryEntryIsolate(Map<String, dynamic> params) async {
   // Extract the token and initialize BackgroundIsolateBinaryMessenger
@@ -22,6 +24,20 @@ Future<void> _addHistoryEntryIsolate(Map<String, dynamic> params) async {
 
   final UserHistory history = UserHistory();
   await history.add(isbn, ppnValue, count);
+}
+
+// Wrapper function for compute
+List<Map<String, String>> _sortLibrariesWrapper(Map<String, dynamic> params) {
+  final List<Map<String, String>> libraries =
+      (params['libraries'] as List<dynamic>).cast<Map<String, String>>();
+  final List<String>? priorityRcrList =
+      (params['priorityRcrList'] as List<dynamic>?)?.cast<String>();
+
+  return sortLibraries(
+    libraries,
+    priorityRcrList: priorityRcrList,
+    addPriorityFlag: true,
+  );
 }
 
 class Home extends StatefulWidget {
@@ -73,9 +89,13 @@ class _HomeState extends State<Home> {
             )
             .toList();
 
+    // Get RCR priority list
+    final rcrStorage = RCR_storage(SharedPreferencesAsync());
+    final priorityRcrList = await rcrStorage.get();
+
     List<Map<String, String>> sortedLibraries = await compute(
-      sortLibraries,
-      allLibraries,
+      _sortLibrariesWrapper,
+      {'libraries': allLibraries, 'priorityRcrList': priorityRcrList},
     );
 
     List<String> ppnValue =
@@ -158,6 +178,8 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final Color primaryColor = Theme.of(context).primaryColor;
+
     if (_data == null) {
       // Initial state or after reset
       return GestureDetector(
@@ -246,20 +268,25 @@ class _HomeState extends State<Home> {
               ),
               Expanded(
                 child: Scrollbar(
-                  thumbVisibility: true,
                   interactive: true,
-                  child: ListView(
+                  child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 180.0),
-                    children:
-                        _data!
-                            .map(
-                              (element) => CustomCard(
-                                title: element['location'],
-                                longitude: element['longitude'],
-                                latitude: element['latitude'],
-                              ),
-                            )
-                            .toList(),
+                    itemCount: _data!.length,
+                    itemBuilder: (context, index) {
+                      if (_data![index]["priority"] == "true") {
+                        return CustomCard(
+                          title: _data![index]['location'],
+                          longitude: _data![index]['longitude'],
+                          latitude: _data![index]['latitude'],
+                          backgroundColor: primaryColor,
+                        );
+                      }
+                      return CustomCard(
+                        title: _data![index]['location'],
+                        longitude: _data![index]['longitude'],
+                        latitude: _data![index]['latitude'],
+                      );
+                    },
                   ),
                 ),
               ),
