@@ -26,13 +26,6 @@ Future<void> _addHistoryEntryIsolate(Map<String, dynamic> params) async {
   await history.add(isbn, ppnValue, count);
 }
 
-class Home extends StatefulWidget {
-  const Home({super.key});
-
-  @override
-  State<Home> createState() => _HomeState();
-}
-
 // Wrapper function for compute
 List<Map<String, String>> _sortLibrariesWrapper(Map<String, dynamic> params) {
   final List<Map<String, String>> libraries =
@@ -45,6 +38,13 @@ List<Map<String, String>> _sortLibrariesWrapper(Map<String, dynamic> params) {
     priorityRcrList: priorityRcrList,
     addPriorityFlag: true,
   );
+}
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {

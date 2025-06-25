@@ -33,7 +33,7 @@ Future<bool> _grantAccessAndroid() async {
       permissionGranted = true;
     }
   } else {
-    // Android 10 (API 29) or older (down to your minSdk)
+    // Android 10 (API 29) or older
     PermissionStatus status = await Permission.storage.status;
     debugPrint("Android 10 or older: Initial storage status: $status");
     if (!status.isGranted) {

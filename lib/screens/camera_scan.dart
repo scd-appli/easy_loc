@@ -27,7 +27,7 @@ class _CameraScanState extends State<CameraScan> {
   bool _isProcessing = false;
   bool _canProcess = true;
   Timer? _processingDelayTimer;
-  bool _isCameraInitialized = false; // Track initialization state
+  bool _isCameraInitialized = false;
   String? _initializationError; // Store initialization error message
 
   final _orientations = {

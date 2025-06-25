@@ -146,10 +146,10 @@ Future<List<Map<String, dynamic>>> multiwhere(
                         }
                       }
                     }
-                    return null; // Return null for invalid or incomplete items
+                    return null;
                   })
                   .whereType<Map<String, String>>()
-                  .toList(); // Filter out nulls and ensure correct type
+                  .toList();
         }
         results.add({'ppn': ppnValue, 'libraries': libraries});
       } catch (e) {
