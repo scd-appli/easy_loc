@@ -161,23 +161,43 @@ Future<Map<String, List<String>>?> unimarc(
       format: FileFormat.xml,
     );
     final XmlDocument document = XmlDocument.parse(response);
-    final Iterable<XmlElement> datafields = document.descendantElements.where(
-      (element) =>
-          element.localName == 'datafield' &&
-          element.getAttribute('tag') == '200',
-    );
+    final Iterable<XmlElement> datafields200 = document.descendantElements
+        .where(
+          (element) =>
+              element.localName == 'datafield' &&
+              element.getAttribute('tag') == '200',
+        );
 
     Map<String, List<String>> result = {};
 
-    for (var datafieldElement in datafields) {
+    for (var datafieldElement in datafields200) {
       for (var subfieldElement in datafieldElement.findElements('subfield')) {
         var code = subfieldElement.getAttribute("code");
         var text = subfieldElement.innerText;
         if (code != null && text.isNotEmpty) {
-          if (!result.containsKey(code)) {
-            result[code] = [];
+          if (!result.containsKey("200/$code")) {
+            result["200/$code"] = [];
           }
-          result[code]!.add(text);
+          result["200/$code"]!.add(text);
+        }
+      }
+    }
+
+    final Iterable<XmlElement> datafield214 = document.descendantElements.where(
+      (element) =>
+          element.localName == "datafield" &&
+          element.getAttribute("tag") == "214",
+    );
+
+    for (var datafieldElement in datafield214) {
+      for (var subfieldElement in datafieldElement.findElements("subfield")) {
+        var code = subfieldElement.getAttribute("code");
+        var text = subfieldElement.innerText;
+        if (code != null && text.isNotEmpty) {
+          if (!result.containsKey("214/$code")) {
+            result["214/$code"] = [];
+          }
+          result["214/$code"]!.add(text);
         }
       }
     }

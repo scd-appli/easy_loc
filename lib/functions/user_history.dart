@@ -17,16 +17,21 @@ class UserHistory {
     "ISBN/ISSN",
     "Count",
     "PPN",
-    "code a",
-    "code c",
-    "code d",
-    "code e",
-    "code f",
-    "code g",
-    "code h",
-    "code i",
-    "code r",
-    "code z",
+    "200/a",
+    "200/c",
+    "200/d",
+    "200/e",
+    "200/f",
+    "200/g",
+    "200/h",
+    "200/i",
+    "200/r",
+    "200/z",
+    "214/b",
+    "214/c",
+    "214/d",
+    "214/r",
+    "214/s",
   ];
 
   UserHistory();
@@ -146,10 +151,8 @@ class UserHistory {
 
     if (unimarcResult != null) {
       for (String descriptor in unimarcFieldDescriptors) {
-        String codeKey = descriptor.substring("code ".length);
-
-        if (unimarcResult.containsKey(codeKey)) {
-          listMergedWithPPN.add(unimarcResult[codeKey]!.join("; "));
+        if (unimarcResult.containsKey(descriptor)) {
+          listMergedWithPPN.add(unimarcResult[descriptor]!.join("; "));
         } else {
           listMergedWithPPN.add("");
         }
